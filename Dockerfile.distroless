@@ -1,0 +1,75 @@
+# 多階段建構 - 使用Distroless映像（最安全）
+# Stage 1: 建構階段
+FROM python:3.11-slim-bookworm AS builder
+
+# 設定建構環境
+WORKDIR /build
+
+# 安裝建構依賴
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends \
+        gcc \
+        python3-dev \
+        build-essential \
+        libffi-dev \
+        libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 升級pip和建構工具
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# 複製requirements並安裝依賴
+COPY requirements.txt .
+RUN pip install --no-cache-dir --target /app/dependencies -r requirements.txt
+
+# 複製應用程式文件
+COPY app.py generate_TW_patients.py config_loader.py run.py /app/
+COPY config/ /app/config/
+COPY templates/ /app/templates/
+
+# Stage 2: Distroless運行階段
+FROM gcr.io/distroless/python3-debian12:nonroot AS runtime
+
+# 設定標籤
+LABEL maintainer="Taiwan FHIR Generator Team" \
+      version="2.2.0" \
+      description="Taiwan FHIR Patient Data Generator - Distroless Version" \
+      security.scan="trivy" \
+      security.non-root="true" \
+      security.distroless="true"
+
+# 設定環境變數
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app:/app/dependencies \
+    FLASK_ENV=production \
+    PYTHONFAULTHANDLER=1 \
+    PYTHONHASHSEED=random
+
+# 設定工作目錄
+WORKDIR /app
+
+# 從建構階段複製依賴和應用程式
+COPY --from=builder --chown=nonroot:nonroot /app/dependencies /app/dependencies
+COPY --from=builder --chown=nonroot:nonroot /app/*.py /app/
+COPY --from=builder --chown=nonroot:nonroot /app/config /app/config
+COPY --from=builder --chown=nonroot:nonroot /app/templates /app/templates
+
+# 創建輸出目錄
+USER root
+RUN mkdir -p /app/output/complete_patients_fixed \
+             /app/output/custom_patients \
+             /app/logs \
+    && chown -R nonroot:nonroot /app
+USER nonroot
+
+# 暴露埠號
+EXPOSE 5000
+
+# 設定健康檢查 (Distroless沒有curl，使用Python進行健康檢查)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/info')" || exit 1
+
+# 啟動應用程式
+ENTRYPOINT ["python", "run.py", "--host", "0.0.0.0", "--port", "5000"]

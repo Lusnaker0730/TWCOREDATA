@@ -1,0 +1,77 @@
+# Git相關
+.git
+.gitignore
+.github
+
+# Python相關
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.pytest_cache
+.coverage
+
+# 虛擬環境
+venv/
+env/
+ENV/
+
+# IDE相關
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 作業系統相關
+.DS_Store
+Thumbs.db
+
+# 文檔和說明
+*.md
+LICENSE
+CONTRIBUTING.md
+DEPLOYMENT.md
+GITHUB_SETUP.md
+
+# 輸出和日誌
+output/
+logs/
+*.log
+
+# 臨時文件
+tmp/
+temp/
+*.tmp
+*.temp
+
+# 敏感文件
+.env
+.env.local
+.env.production
+config/secrets.json
+
+# 測試文件
+test_*.py
+*_test.py
+tests/
+
+# 備份文件
+*.bak
+*.backup
+
+# 壓縮文件
+*.zip
+*.tar.gz
+*.rar
+
+# Docker相關
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# 其他不需要的文件
+summary.md
+twcore*
+package/

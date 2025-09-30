@@ -96,28 +96,73 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Build Docker image
+    - name: Build Docker images
       run: |
+        # 建構原始映像
         docker build -t taiwan-fhir-generator:latest .
+        
+        # 建構安全映像
+        docker build -f Dockerfile.secure -t taiwan-fhir-generator-secure:latest .
 
-    - name: Test Docker image
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'taiwan-fhir-generator-secure:latest'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+    - name: Run Trivy vulnerability scanner (table format)
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'taiwan-fhir-generator-secure:latest'
+        format: 'table'
+        exit-code: '1'
+        ignore-unfixed: true
+        vuln-type: 'os,library'
+        severity: 'CRITICAL,HIGH'
+
+    - name: Test Docker images
       run: |
-        # 啟動容器並測試
-        docker run -d --name test-container -p 5000:5000 taiwan-fhir-generator:latest
+        # 測試安全映像
+        echo "測試安全映像..."
+        docker run -d --name test-secure -p 5000:5000 taiwan-fhir-generator-secure:latest
         sleep 30
         
         # 測試健康檢查
-        if curl -f http://localhost:5000/; then
-          echo "✅ Docker container is healthy"
+        if curl -f http://localhost:5000/api/info; then
+          echo "✅ Secure Docker container is healthy"
         else
-          echo "❌ Docker container health check failed"
-          docker logs test-container
+          echo "❌ Secure Docker container health check failed"
+          docker logs test-secure
+          exit 1
+        fi
+        
+        # 檢查是否運行在非root用戶
+        USER_INFO=$(docker exec test-secure whoami)
+        if [ "$USER_INFO" != "root" ]; then
+          echo "✅ Container running as non-root user: $USER_INFO"
+        else
+          echo "❌ Container running as root user"
           exit 1
         fi
         
         # 清理
-        docker stop test-container
-        docker rm test-container
+        docker stop test-secure
+        docker rm test-secure
+
+    - name: Docker image size comparison
+      run: |
+        echo "📊 映像大小比較:"
+        echo "原始映像:"
+        docker images taiwan-fhir-generator:latest --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
+        echo "安全映像:"
+        docker images taiwan-fhir-generator-secure:latest --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
 
   security:
     runs-on: ubuntu-latest

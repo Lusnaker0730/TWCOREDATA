@@ -1,10 +1,14 @@
-# Web Framework
-Flask==2.3.3
-Werkzeug==2.3.7
+# Web Framework (最新安全版本)
+Flask==3.0.0
+Werkzeug==3.0.1
 
-# HTTP Requests
+# HTTP Requests (最新安全版本)
 requests==2.31.0
-urllib3==2.0.7
+urllib3==2.1.0
+
+# 安全相關套件
+cryptography>=41.0.7
+certifi>=2023.11.17
 
 # JSON handling (built-in, but listed for clarity)
 # json - built-in module
