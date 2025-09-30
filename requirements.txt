@@ -1,0 +1,42 @@
+# Web Framework
+Flask==2.3.3
+Werkzeug==2.3.7
+
+# HTTP Requests
+requests==2.31.0
+urllib3==2.0.7
+
+# JSON handling (built-in, but listed for clarity)
+# json - built-in module
+
+# Path handling (built-in, but listed for clarity)  
+# pathlib - built-in module
+
+# Date and time handling (built-in)
+# datetime - built-in module
+
+# Random number generation (built-in)
+# random - built-in module
+
+# UUID generation (built-in)
+# uuid - built-in module
+
+# Threading (built-in)
+# threading - built-in module
+
+# Time utilities (built-in)
+# time - built-in module
+
+# Regular expressions (built-in)
+# re - built-in module
+
+# Operating system interface (built-in)
+# os - built-in module
+
+# System-specific parameters (built-in)
+# sys - built-in module
+
+# Additional useful packages for development
+# pytest==7.4.3          # For testing (uncomment if needed)
+# black==23.9.1           # For code formatting (uncomment if needed)
+# flake8==6.1.0           # For linting (uncomment if needed)

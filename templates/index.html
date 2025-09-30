@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣 FHIR 病人資料生成器</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h2 i {
+            color: #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .info-card {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .info-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .info-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .stat-item .number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-item .label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .progress-container {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-top: 30px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e1e5e9;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .results-container {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-top: 30px;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .download-btn {
+            background: #28a745;
+            margin-top: 15px;
+        }
+
+        .download-btn:hover {
+            background: #218838;
+        }
+
+        .server-config {
+            display: none;
+            margin-top: 15px;
+        }
+
+        .server-config.show {
+            display: block;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-list li i {
+            color: #28a745;
+            width: 20px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-hospital"></i> 台灣 FHIR 病人資料生成器</h1>
+            <p>快速生成符合台灣醫療標準的 FHIR 病人資料</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 設定表單 -->
+            <div class="card">
+                <h2><i class="fas fa-cogs"></i> 生成設定</h2>
+                
+                <form id="generateForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="num_patients">病人數量</label>
+                            <input type="number" id="num_patients" name="num_patients" value="2" min="1" max="100" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="num_conditions">每人疾病數 (可設為0)</label>
+                            <input type="number" id="num_conditions" name="num_conditions" value="2" min="0" max="20" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="num_observations">每人觀察記錄數 (可設為0)</label>
+                        <input type="number" id="num_observations" name="num_observations" value="3" min="0" max="50" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="num_medications">每人藥物數量 (可設為0)</label>
+                        <input type="number" id="num_medications" name="num_medications" value="2" min="0" max="20" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="server_choice">上傳選項</label>
+                        <select id="server_choice" name="server_choice">
+                            <option value="none">僅生成檔案，不上傳</option>
+                            <option value="twcore">台灣 TWCORE 伺服器</option>
+                            <option value="hapi">國際 HAPI 伺服器</option>
+                            <option value="custom">自訂伺服器</option>
+                        </select>
+                    </div>
+
+                    <div class="server-config" id="customServerConfig">
+                        <div class="form-group">
+                            <label for="custom_server">自訂伺服器 URL</label>
+                            <input type="url" id="custom_server" name="custom_server" placeholder="https://your-fhir-server.com/fhir">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn" id="generateBtn">
+                        <i class="fas fa-play"></i>
+                        開始生成
+                    </button>
+                    
+                    <div class="text-center mt-3">
+                        <a href="/custom" class="btn btn-outline-primary">
+                            <i class="fas fa-user-md me-2"></i>自定義單一病人生成
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 系統資訊 -->
+            <div class="card">
+                <h2><i class="fas fa-info-circle"></i> 系統資訊</h2>
+                
+                <div class="info-card">
+                    <h3>功能特色</h3>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> 符合台灣 TWCORE 規範</li>
+                        <li><i class="fas fa-check"></i> 支援 SNOMED CT 疾病代碼</li>
+                        <li><i class="fas fa-check"></i> 支援 LOINC 觀察代碼</li>
+                        <li><i class="fas fa-check"></i> 支援 RxNorm 藥物代碼</li>
+                        <li><i class="fas fa-check"></i> 自動生成台灣身份證號</li>
+                        <li><i class="fas fa-check"></i> 真實的台灣地址和電話</li>
+                        <li><i class="fas fa-check"></i> 批量上傳到 FHIR 伺服器</li>
+                    </ul>
+                </div>
+
+                <div class="stats" id="systemStats">
+                    <div class="stat-item">
+                        <div class="number" id="conditionsCount">-</div>
+                        <div class="label">可用疾病</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="number" id="observationsCount">-</div>
+                        <div class="label">可用觀察</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="number" id="medicationsCount">-</div>
+                        <div class="label">可用藥物</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="number">1.0</div>
+                        <div class="label">版本</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 進度顯示 -->
+        <div class="progress-container" id="progressContainer">
+            <h2><i class="fas fa-spinner fa-spin"></i> 生成進度</h2>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">準備中...</div>
+        </div>
+
+        <!-- 結果顯示 -->
+        <div class="results-container" id="resultsContainer">
+            <h2><i class="fas fa-check-circle"></i> 生成結果</h2>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // 載入系統資訊
+        fetch('/api/info')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('conditionsCount').textContent = data.available_conditions;
+                document.getElementById('observationsCount').textContent = data.available_observations;
+                document.getElementById('medicationsCount').textContent = data.available_medications;
+            })
+            .catch(error => console.error('載入系統資訊失敗:', error));
+
+        // 伺服器選擇變更處理
+        document.getElementById('server_choice').addEventListener('change', function() {
+            const customConfig = document.getElementById('customServerConfig');
+            if (this.value === 'custom') {
+                customConfig.classList.add('show');
+            } else {
+                customConfig.classList.remove('show');
+            }
+        });
+
+        // 表單提交處理
+        document.getElementById('generateForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const generateBtn = document.getElementById('generateBtn');
+            const progressContainer = document.getElementById('progressContainer');
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            // 重置顯示
+            resultsContainer.style.display = 'none';
+            progressContainer.style.display = 'block';
+            
+            // 禁用按鈕
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<div class="loading-spinner"></div> 生成中...';
+            
+            // 提交表單
+            fetch('/generate', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // 開始輪詢狀態
+                pollStatus();
+            })
+            .catch(error => {
+                showError(error.message);
+                resetForm();
+            });
+        });
+
+        // 輪詢生成狀態
+        function pollStatus() {
+            fetch('/status')
+                .then(response => response.json())
+                .then(data => {
+                    updateProgress(data.progress, data.current_step);
+                    
+                    if (data.error) {
+                        showError(data.error);
+                        resetForm();
+                    } else if (data.results) {
+                        showResults(data.results);
+                        resetForm();
+                    } else if (data.is_running) {
+                        // 繼續輪詢
+                        setTimeout(pollStatus, 1000);
+                    }
+                })
+                .catch(error => {
+                    showError('無法獲取生成狀態: ' + error.message);
+                    resetForm();
+                });
+        }
+
+        // 更新進度
+        function updateProgress(progress, step) {
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = step;
+        }
+
+        // 顯示結果
+        function showResults(results) {
+            const progressContainer = document.getElementById('progressContainer');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            progressContainer.style.display = 'none';
+            resultsContainer.style.display = 'block';
+            
+            let html = '<div class="success-message">';
+            html += '<i class="fas fa-check-circle"></i> 資料生成成功！';
+            html += '</div>';
+            
+            html += '<div class="stats">';
+            html += `<div class="stat-item"><div class="number">${results.num_patients}</div><div class="label">病人</div></div>`;
+            html += `<div class="stat-item"><div class="number">${results.num_conditions}</div><div class="label">疾病</div></div>`;
+            html += `<div class="stat-item"><div class="number">${results.num_observations}</div><div class="label">觀察</div></div>`;
+            html += `<div class="stat-item"><div class="number">${results.num_medications}</div><div class="label">藥物</div></div>`;
+            html += `<div class="stat-item"><div class="number">${results.num_medication_requests}</div><div class="label">處方</div></div>`;
+            html += '</div>';
+            
+            if (results.upload) {
+                html += '<div class="info-card" style="margin-top: 20px;">';
+                html += '<h3><i class="fas fa-cloud-upload-alt"></i> 上傳結果</h3>';
+                html += `<p><strong>伺服器:</strong> ${results.upload.server_url}</p>`;
+                html += `<p><strong>成功上傳病人:</strong> ${results.upload.successful_patients}</p>`;
+                html += `<p><strong>成功上傳疾病:</strong> ${results.upload.total_conditions}</p>`;
+                html += `<p><strong>成功上傳觀察:</strong> ${results.upload.total_observations}</p>`;
+                html += `<p><strong>成功上傳藥物:</strong> ${results.upload.total_medications}</p>`;
+                html += `<p><strong>成功上傳處方:</strong> ${results.upload.total_medication_requests}</p>`;
+                if (results.upload.total_errors > 0) {
+                    html += `<p style="color: #dc3545;"><strong>錯誤數量:</strong> ${results.upload.total_errors}</p>`;
+                }
+                html += '</div>';
+            }
+            
+            // 下載按鈕
+            const filename = results.filename.split('/').pop();
+            html += `<button class="btn download-btn" onclick="downloadFile('${filename}')">`;
+            html += '<i class="fas fa-download"></i> 下載生成的檔案';
+            html += '</button>';
+            
+            resultsContent.innerHTML = html;
+        }
+
+        // 顯示錯誤
+        function showError(message) {
+            const progressContainer = document.getElementById('progressContainer');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            progressContainer.style.display = 'none';
+            resultsContainer.style.display = 'block';
+            
+            resultsContent.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i> ${message}
+                </div>
+            `;
+        }
+
+        // 重置表單
+        function resetForm() {
+            const generateBtn = document.getElementById('generateBtn');
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = '<i class="fas fa-play"></i> 開始生成';
+        }
+
+        // 下載檔案
+        function downloadFile(filename) {
+            window.location.href = `/download/${filename}`;
+        }
+    </script>
+</body>
+</html>

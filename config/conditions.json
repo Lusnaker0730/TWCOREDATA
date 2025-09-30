@@ -1,0 +1,177 @@
+{
+  "description": "台灣常見疾病診斷資料庫 - 使用 SNOMED CT 代碼",
+  "version": "1.0.0",
+  "last_updated": "2025-09-30",
+  "categories": {
+    "cardiovascular": {
+      "name": "心血管疾病",
+      "conditions": [
+        {"code": "44054006", "display": "Diabetes mellitus", "system": "http://snomed.info/sct"},
+        {"code": "38341003", "display": "Hypertensive disorder", "system": "http://snomed.info/sct"},
+        {"code": "53741008", "display": "Coronary arteriosclerosis", "system": "http://snomed.info/sct"},
+        {"code": "22298006", "display": "Myocardial infarction", "system": "http://snomed.info/sct"},
+        {"code": "49436004", "display": "Atrial fibrillation", "system": "http://snomed.info/sct"},
+        {"code": "84114007", "display": "Heart failure", "system": "http://snomed.info/sct"},
+        {"code": "414545008", "display": "Ischemic heart disease", "system": "http://snomed.info/sct"}
+      ]
+    },
+    "respiratory": {
+      "name": "呼吸系統疾病",
+      "conditions": [
+        {"code": "195967001", "display": "Asthma", "system": "http://snomed.info/sct"},
+        {"code": "13645005", "display": "Chronic obstructive lung disease", "system": "http://snomed.info/sct"},
+        {"code": "233604007", "display": "Pneumonia", "system": "http://snomed.info/sct"},
+        {"code": "19829001", "display": "Disorder of lung", "system": "http://snomed.info/sct"}
+      ]
+    },
+    "digestive": {
+      "name": "消化系統疾病",
+      "conditions": [
+        {"code": "422400008", "display": "Vomiting", "system": "http://snomed.info/sct"},
+        {"code": "14760008", "display": "Constipation", "system": "http://snomed.info/sct"},
+        {"code": "62315008", "display": "Diarrhea", "system": "http://snomed.info/sct"},
+        {"code": "235595009", "display": "Gastritis", "system": "http://snomed.info/sct"},
+        {"code": "397825006", "display": "Gastric ulcer", "system": "http://snomed.info/sct"},
+        {"code": "235919008", "display": "Duodenal ulcer", "system": "http://snomed.info/sct"},
+        {"code": "235856003", "display": "Gastroesophageal reflux disease", "system": "http://snomed.info/sct"},
+        {"code": "197456007", "display": "Hepatitis", "system": "http://snomed.info/sct"},
+        {"code": "197441003", "display": "Cirrhosis of liver", "system": "http://snomed.info/sct"},
+        {"code": "235494005", "display": "Cholelithiasis", "system": "http://snomed.info/sct"}
+      ]
+    },
+    "neurological": {
+      "name": "神經系統疾病",
+      "conditions": [
+        {"code": "25064002", "display": "Headache", "system": "http://snomed.info/sct"},
+        {"code": "37796009", "display": "Migraine", "system": "http://snomed.info/sct"},
+        {"code": "230690007", "display": "Stroke", "system": "http://snomed.info/sct"},
+        {"code": "49049000", "display": "Parkinson disease", "system": "http://snomed.info/sct"},
+        {"code": "26929004", "display": "Alzheimer's disease", "system": "http://snomed.info/sct"},
+        {"code": "84757009", "display": "Epilepsy", "system": "http://snomed.info/sct"},
+        {"code": "386806002", "display": "Insomnia", "system": "http://snomed.info/sct"},
+        {"code": "35489007", "display": "Depressive disorder", "system": "http://snomed.info/sct"},
+        {"code": "48694002", "display": "Anxiety", "system": "http://snomed.info/sct"},
+        {"code": "162397003", "display": "Pain in throat", "system": "http://snomed.info/sct"}
+      ]
+    },
+    "infectious": {
+      "name": "感染性疾病",
+      "conditions": [
+        {"code": "386661006", "display": "Fever", "system": "http://snomed.info/sct"},
+        {"code": "49727002", "display": "Cough", "system": "http://snomed.info/sct"},
+        {"code": "82272006", "display": "Common cold", "system": "http://snomed.info/sct"},
+        {"code": "6142004", "display": "Influenza", "system": "http://snomed.info/sct"},
+        {"code": "43878008", "display": "Streptococcal infection", "system": "http://snomed.info/sct"},
+        {"code": "68566005", "display": "Urinary tract infectious disease", "system": "http://snomed.info/sct"},
+        {"code": "840539006", "display": "COVID-19", "system": "http://snomed.info/sct"},
+        {"code": "4834000", "display": "Typhoid fever", "system": "http://snomed.info/sct"},
+        {"code": "240422004", "display": "Dengue fever", "system": "http://snomed.info/sct"}
+      ]
+    },
+    "musculoskeletal": {
+      "name": "骨骼肌肉系統疾病",
+      "conditions": [
+        {"code": "22253000", "display": "Pain", "system": "http://snomed.info/sct"},
+        {"code": "3877011000036101", "display": "Arthritis", "system": "http://snomed.info/sct"},
+        {"code": "69896004", "display": "Rheumatoid arthritis", "system": "http://snomed.info/sct"},
+        {"code": "64859006", "display": "Osteoporosis", "system": "http://snomed.info/sct"},
+        {"code": "203095000", "display": "Fracture", "system": "http://snomed.info/sct"},
+        {"code": "129565002", "display": "Muscle pain", "system": "http://snomed.info/sct"},
+        {"code": "161891005", "display": "Back pain", "system": "http://snomed.info/sct"},
+        {"code": "274663001", "display": "Acute low back pain", "system": "http://snomed.info/sct"},
+        {"code": "202855006", "display": "Sprain", "system": "http://snomed.info/sct"},
+        {"code": "90560007", "display": "Gout", "system": "http://snomed.info/sct"}
+      ]
+    },
+    "endocrine": {
+      "name": "內分泌疾病",
+      "conditions": [
+        {"code": "34486009", "display": "Hyperthyroidism", "system": "http://snomed.info/sct"},
+        {"code": "40930008", "display": "Hypothyroidism", "system": "http://snomed.info/sct"},
+        {"code": "267432004", "display": "Thyroid nodule", "system": "http://snomed.info/sct"},
+        {"code": "190448007", "display": "Obesity", "system": "http://snomed.info/sct"},
+        {"code": "238108007", "display": "Metabolic syndrome", "system": "http://snomed.info/sct"},
+        {"code": "237599002", "display": "Insulin resistance", "system": "http://snomed.info/sct"},
+        {"code": "421895002", "display": "Cushing syndrome", "system": "http://snomed.info/sct"},
+        {"code": "386033004", "display": "Adrenal insufficiency", "system": "http://snomed.info/sct"},
+        {"code": "190502001", "display": "Polycystic ovary syndrome", "system": "http://snomed.info/sct"},
+        {"code": "237618001", "display": "Menopause", "system": "http://snomed.info/sct"}
+      ]
+    },
+    "genitourinary": {
+      "name": "泌尿生殖系統疾病",
+      "conditions": [
+        {"code": "236423003", "display": "Kidney stone", "system": "http://snomed.info/sct"},
+        {"code": "236425005", "display": "Chronic kidney disease", "system": "http://snomed.info/sct"},
+        {"code": "236436002", "display": "Nephritis", "system": "http://snomed.info/sct"},
+        {"code": "197684005", "display": "Prostatic hyperplasia", "system": "http://snomed.info/sct"},
+        {"code": "254900004", "display": "Prostatitis", "system": "http://snomed.info/sct"},
+        {"code": "165816005", "display": "Irregular menstruation", "system": "http://snomed.info/sct"},
+        {"code": "17369002", "display": "Dysmenorrhea", "system": "http://snomed.info/sct"},
+        {"code": "237091009", "display": "Uterine fibroid", "system": "http://snomed.info/sct"},
+        {"code": "129103003", "display": "Cystitis", "system": "http://snomed.info/sct"},
+        {"code": "38822007", "display": "Bladder stone", "system": "http://snomed.info/sct"}
+      ]
+    },
+    "dermatological": {
+      "name": "皮膚疾病",
+      "conditions": [
+        {"code": "43116000", "display": "Eczema", "system": "http://snomed.info/sct"},
+        {"code": "9014002", "display": "Psoriasis", "system": "http://snomed.info/sct"},
+        {"code": "271807003", "display": "Rash", "system": "http://snomed.info/sct"},
+        {"code": "247441003", "display": "Erythema", "system": "http://snomed.info/sct"},
+        {"code": "418290006", "display": "Pruritus", "system": "http://snomed.info/sct"},
+        {"code": "400210000", "display": "Hemangioma", "system": "http://snomed.info/sct"},
+        {"code": "238575004", "display": "Acne", "system": "http://snomed.info/sct"},
+        {"code": "4557003", "display": "Wart", "system": "http://snomed.info/sct"},
+        {"code": "15508007", "display": "Melanoma", "system": "http://snomed.info/sct"},
+        {"code": "254837009", "display": "Malignant neoplasm of skin", "system": "http://snomed.info/sct"}
+      ]
+    },
+    "ophthalmological": {
+      "name": "眼科疾病",
+      "conditions": [
+        {"code": "193570009", "display": "Cataract", "system": "http://snomed.info/sct"},
+        {"code": "23986001", "display": "Glaucoma", "system": "http://snomed.info/sct"},
+        {"code": "267718000", "display": "Myopia", "system": "http://snomed.info/sct"},
+        {"code": "38101003", "display": "Hyperopia", "system": "http://snomed.info/sct"},
+        {"code": "82649003", "display": "Astigmatism", "system": "http://snomed.info/sct"},
+        {"code": "230506007", "display": "Retinal disorder", "system": "http://snomed.info/sct"},
+        {"code": "193387007", "display": "Conjunctivitis", "system": "http://snomed.info/sct"},
+        {"code": "9826008", "display": "Keratitis", "system": "http://snomed.info/sct"},
+        {"code": "231857006", "display": "Presbyopia", "system": "http://snomed.info/sct"},
+        {"code": "246636008", "display": "Dry eye syndrome", "system": "http://snomed.info/sct"}
+      ]
+    },
+    "otolaryngological": {
+      "name": "耳鼻喉疾病",
+      "conditions": [
+        {"code": "65363002", "display": "Otitis media", "system": "http://snomed.info/sct"},
+        {"code": "15188001", "display": "Hearing loss", "system": "http://snomed.info/sct"},
+        {"code": "60862001", "display": "Tinnitus", "system": "http://snomed.info/sct"},
+        {"code": "195967001", "display": "Sinusitis", "system": "http://snomed.info/sct"},
+        {"code": "232209000", "display": "Rhinitis", "system": "http://snomed.info/sct"},
+        {"code": "195662009", "display": "Pharyngitis", "system": "http://snomed.info/sct"},
+        {"code": "195708005", "display": "Tonsillitis", "system": "http://snomed.info/sct"},
+        {"code": "267102003", "display": "Acute upper respiratory infection", "system": "http://snomed.info/sct"},
+        {"code": "232208008", "display": "Nasal polyp", "system": "http://snomed.info/sct"},
+        {"code": "300228004", "display": "Allergic rhinitis", "system": "http://snomed.info/sct"}
+      ]
+    },
+    "hematological": {
+      "name": "血液疾病",
+      "conditions": [
+        {"code": "271737000", "display": "Anemia", "system": "http://snomed.info/sct"},
+        {"code": "87522002", "display": "Iron deficiency anemia", "system": "http://snomed.info/sct"},
+        {"code": "61261009", "display": "Thalassemia", "system": "http://snomed.info/sct"},
+        {"code": "127034005", "display": "Leukemia", "system": "http://snomed.info/sct"},
+        {"code": "118600007", "display": "Malignant lymphoma", "system": "http://snomed.info/sct"},
+        {"code": "64572001", "display": "Hemophilia", "system": "http://snomed.info/sct"},
+        {"code": "302215000", "display": "Thrombocytopenia", "system": "http://snomed.info/sct"},
+        {"code": "439007008", "display": "Thrombocytosis", "system": "http://snomed.info/sct"},
+        {"code": "234467004", "display": "Thrombosis", "system": "http://snomed.info/sct"},
+        {"code": "312824007", "display": "Familial hypercholesterolemia", "system": "http://snomed.info/sct"}
+      ]
+    }
+  }
+}

@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自定義病人資料生成器 - 台灣 FHIR</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .container {
+            padding: 2rem 0;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 1.5rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-outline-primary {
+            border: 2px solid #667eea;
+            color: #667eea;
+            border-radius: 10px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-primary:hover {
+            background: #667eea;
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .selection-card {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .selection-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.1);
+        }
+        
+        .selection-card.selected {
+            border-color: #667eea;
+            background-color: rgba(102, 126, 234, 0.05);
+        }
+        
+        .badge {
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+        }
+        
+        .search-box {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+        
+        .search-box input {
+            padding-left: 45px;
+        }
+        
+        .tab-content {
+            padding: 1.5rem 0;
+        }
+        
+        .nav-tabs .nav-link {
+            border-radius: 10px 10px 0 0;
+            border: none;
+            color: #6c757d;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .spinner-border {
+            color: #667eea;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        
+        .selected-items {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 1rem;
+            background-color: #f8f9fa;
+        }
+        
+        .selected-item {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            margin: 0.25rem;
+            border-radius: 15px;
+            font-size: 0.875rem;
+        }
+        
+        .selected-item .remove {
+            margin-left: 0.5rem;
+            cursor: pointer;
+            opacity: 0.8;
+        }
+        
+        .selected-item .remove:hover {
+            opacity: 1;
+        }
+        
+        .summary-section {
+            border-left: 4px solid #e9ecef;
+            padding-left: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .summary-section h6.text-danger {
+            border-left-color: #dc3545;
+        }
+        
+        .summary-section h6.text-success {
+            border-left-color: #198754;
+        }
+        
+        .summary-section h6.text-info {
+            border-left-color: #0dcaf0;
+        }
+        
+        .summary-items {
+            max-height: 120px;
+            overflow-y: auto;
+            padding: 0.5rem;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            margin-top: 0.5rem;
+        }
+        
+        .summary-item {
+            display: block;
+            padding: 0.25rem 0.5rem;
+            margin: 0.25rem 0;
+            background: white;
+            border-radius: 3px;
+            font-size: 0.875rem;
+            border-left: 3px solid #e9ecef;
+            position: relative;
+        }
+        
+        .summary-item.condition {
+            border-left-color: #dc3545;
+        }
+        
+        .summary-item.observation {
+            border-left-color: #198754;
+        }
+        
+        .summary-item.medication {
+            border-left-color: #0dcaf0;
+        }
+        
+        .summary-item .remove-btn {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+        
+        .summary-item .remove-btn:hover {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-primary.btn-sm {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+        }
+        
+        .btn-primary.btn-sm:hover {
+            background: linear-gradient(135deg, #218838 0%, #1aa085 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h1 class="mb-0">
+                            <i class="fas fa-user-md me-2"></i>
+                            自定義病人資料生成器
+                        </h1>
+                        <p class="mb-0 mt-2">精確選擇疾病、觀察項目和藥物</p>
+                    </div>
+                    
+                    <div class="card-body">
+                        <!-- 已選擇項目總結 -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="card border-primary">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-clipboard-list me-2"></i>已選擇項目總結
+                                            <button type="button" class="btn btn-primary btn-sm float-end" id="generateBtnTop">
+                                                <i class="fas fa-magic me-2"></i>生成病人資料
+                                            </button>
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <!-- 疾病總結 -->
+                                            <div class="col-md-4">
+                                                <div class="summary-section">
+                                                    <h6 class="text-danger">
+                                                        <i class="fas fa-stethoscope me-2"></i>疾病診斷
+                                                        <span class="badge bg-danger ms-2" id="conditionCount">0</span>
+                                                    </h6>
+                                                    <div id="conditionSummary" class="summary-items">
+                                                        <p class="text-muted small mb-0">尚未選擇任何疾病</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- 觀察項目總結 -->
+                                            <div class="col-md-4">
+                                                <div class="summary-section">
+                                                    <h6 class="text-success">
+                                                        <i class="fas fa-microscope me-2"></i>觀察項目
+                                                        <span class="badge bg-success ms-2" id="observationCount">0</span>
+                                                    </h6>
+                                                    <div id="observationSummary" class="summary-items">
+                                                        <p class="text-muted small mb-0">尚未選擇任何觀察項目</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- 藥物總結 -->
+                                            <div class="col-md-4">
+                                                <div class="summary-section">
+                                                    <h6 class="text-info">
+                                                        <i class="fas fa-pills me-2"></i>藥物處方
+                                                        <span class="badge bg-info ms-2" id="medicationCount">0</span>
+                                                    </h6>
+                                                    <div id="medicationSummary" class="summary-items">
+                                                        <p class="text-muted small mb-0">尚未選擇任何藥物</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- 生成和上傳選項 -->
+                                        <div class="row mt-3">
+                                            <div class="col-12">
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="uploadToServerTop">
+                                                        <label class="form-check-label" for="uploadToServerTop">
+                                                            生成後自動上傳到 FHIR 伺服器
+                                                        </label>
+                                                    </div>
+                                                    
+                                                    <div id="serverOptionsTop" style="display: none;">
+                                                        <select class="form-select form-select-sm d-inline-block w-auto me-2" id="serverChoiceTop">
+                                                            <option value="1">台灣 TWCORE</option>
+                                                            <option value="2">國際 HAPI</option>
+                                                            <option value="3">自訂伺服器</option>
+                                                        </select>
+                                                        <input type="url" class="form-control form-control-sm d-inline-block w-auto" id="customServerTop" placeholder="自訂伺服器地址" style="display: none; width: 200px !important;">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- 結果顯示區域 -->
+                                        <div id="topResults" style="display: none;" class="mt-3">
+                                            <!-- 結果將在這裡動態顯示 -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 導航選項卡 -->
+                        <ul class="nav nav-tabs" id="selectionTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="conditions-tab" data-bs-toggle="tab" data-bs-target="#conditions" type="button" role="tab">
+                                    <i class="fas fa-stethoscope me-2"></i>疾病診斷
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="observations-tab" data-bs-toggle="tab" data-bs-target="#observations" type="button" role="tab">
+                                    <i class="fas fa-microscope me-2"></i>觀察項目
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="medications-tab" data-bs-toggle="tab" data-bs-target="#medications" type="button" role="tab">
+                                    <i class="fas fa-pills me-2"></i>藥物處方
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content" id="selectionTabContent">
+                            <!-- 疾病選擇 -->
+                            <div class="tab-pane fade show active" id="conditions" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h5><i class="fas fa-search me-2"></i>搜尋疾病</h5>
+                                        <div class="search-box">
+                                            <i class="fas fa-search"></i>
+                                            <input type="text" class="form-control" id="conditionSearch" placeholder="輸入疾病名稱或代碼...">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="conditionCategory" class="form-label">類別篩選</label>
+                                            <select class="form-select" id="conditionCategory">
+                                                <option value="">所有類別</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div id="conditionList" class="selection-list">
+                                            <!-- 疾病列表將在這裡動態載入 -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 觀察項目選擇 -->
+                            <div class="tab-pane fade" id="observations" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h5><i class="fas fa-search me-2"></i>搜尋觀察項目</h5>
+                                        <div class="search-box">
+                                            <i class="fas fa-search"></i>
+                                            <input type="text" class="form-control" id="observationSearch" placeholder="輸入觀察項目名稱或代碼...">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="observationCategory" class="form-label">類別篩選</label>
+                                            <select class="form-select" id="observationCategory">
+                                                <option value="">所有類別</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div id="observationList" class="selection-list">
+                                            <!-- 觀察項目列表將在這裡動態載入 -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 藥物選擇 -->
+                            <div class="tab-pane fade" id="medications" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h5><i class="fas fa-search me-2"></i>搜尋藥物</h5>
+                                        <div class="search-box">
+                                            <i class="fas fa-search"></i>
+                                            <input type="text" class="form-control" id="medicationSearch" placeholder="輸入藥物名稱或代碼...">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="medicationCategory" class="form-label">類別篩選</label>
+                                            <select class="form-select" id="medicationCategory">
+                                                <option value="">所有類別</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div id="medicationList" class="selection-list">
+                                            <!-- 藥物列表將在這裡動態載入 -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 返回按鈕 -->
+                        <div class="text-center mt-4">
+                            <a href="/" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>返回批量生成
+                            </a>
+                        </div>
+                        
+                        <!-- 載入中（已移至頂部，保留以防需要） -->
+                        <div id="loading" class="loading" style="display: none;">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">載入中...</span>
+                            </div>
+                            <p class="mt-2">正在生成病人資料...</p>
+                        </div>
+                        
+                        <!-- 結果顯示（已移至頂部，保留以防需要） -->
+                        <div id="results" style="display: none;">
+                            <!-- 結果將在這裡顯示 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 全域變數
+        let selectedConditions = [];
+        let selectedObservations = [];
+        let selectedMedications = [];
+        let allConditions = [];
+        let allObservations = [];
+        let allMedications = [];
+        let categories = {};
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCategories();
+            loadConditions();
+            setupEventListeners();
+        });
+
+        // 載入類別
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/categories');
+                categories = await response.json();
+                
+                // 填充類別選擇器
+                populateSelect('conditionCategory', categories.conditions);
+                populateSelect('observationCategory', categories.observations);
+                populateSelect('medicationCategory', categories.medications);
+            } catch (error) {
+                console.error('載入類別失敗:', error);
+            }
+        }
+
+        // 填充選擇器
+        function populateSelect(selectId, options) {
+            const select = document.getElementById(selectId);
+            options.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option;
+                optionElement.textContent = option;
+                select.appendChild(optionElement);
+            });
+        }
+
+        // 載入疾病
+        async function loadConditions(category = '', search = '') {
+            try {
+                let url = '/api/conditions?limit=50';
+                if (category) url += `&category=${encodeURIComponent(category)}`;
+                
+                const response = await fetch(url);
+                allConditions = await response.json();
+                
+                // 如果有搜尋關鍵字，進行篩選
+                let filteredConditions = allConditions;
+                if (search) {
+                    filteredConditions = allConditions.filter(item => 
+                        item.display.toLowerCase().includes(search.toLowerCase()) ||
+                        item.code.toLowerCase().includes(search.toLowerCase())
+                    );
+                }
+                
+                displayItems('conditionList', filteredConditions, 'condition');
+            } catch (error) {
+                console.error('載入疾病失敗:', error);
+            }
+        }
+
+        // 載入觀察項目
+        async function loadObservations(category = '', search = '') {
+            try {
+                let url = '/api/observations?limit=50';
+                if (category) url += `&category=${encodeURIComponent(category)}`;
+                
+                const response = await fetch(url);
+                allObservations = await response.json();
+                
+                // 如果有搜尋關鍵字，進行篩選
+                let filteredObservations = allObservations;
+                if (search) {
+                    filteredObservations = allObservations.filter(item => 
+                        item.display.toLowerCase().includes(search.toLowerCase()) ||
+                        item.code.toLowerCase().includes(search.toLowerCase())
+                    );
+                }
+                
+                displayItems('observationList', filteredObservations, 'observation');
+            } catch (error) {
+                console.error('載入觀察項目失敗:', error);
+            }
+        }
+
+        // 載入藥物
+        async function loadMedications(category = '', search = '') {
+            try {
+                let url = '/api/medications?limit=50';
+                if (category) url += `&category=${encodeURIComponent(category)}`;
+                
+                const response = await fetch(url);
+                allMedications = await response.json();
+                
+                // 如果有搜尋關鍵字，進行篩選
+                let filteredMedications = allMedications;
+                if (search) {
+                    filteredMedications = allMedications.filter(item => 
+                        item.display.toLowerCase().includes(search.toLowerCase()) ||
+                        item.code.toLowerCase().includes(search.toLowerCase())
+                    );
+                }
+                
+                displayItems('medicationList', filteredMedications, 'medication');
+            } catch (error) {
+                console.error('載入藥物失敗:', error);
+            }
+        }
+
+        // 顯示項目列表
+        function displayItems(containerId, items, type) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            if (items.length === 0) {
+                container.innerHTML = '<p class="text-muted">沒有找到相關項目</p>';
+                return;
+            }
+            
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'selection-card';
+                card.dataset.index = item.index;
+                card.dataset.type = type;
+                
+                let extraInfo = '';
+                if (type === 'observation') {
+                    extraInfo = `<small class="text-muted">單位: ${item.unit || 'N/A'}</small>`;
+                } else if (type === 'medication') {
+                    extraInfo = `<small class="text-muted">劑量: ${item.strength || 'N/A'}</small>`;
+                }
+                
+                card.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">${item.display}</h6>
+                            <p class="mb-1"><small class="text-muted">代碼: ${item.code}</small></p>
+                            ${extraInfo}
+                            <span class="badge bg-secondary">${item.category}</span>
+                        </div>
+                        <button class="btn btn-outline-primary btn-sm" onclick="selectItem(${item.index}, '${type}')">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        // 選擇項目
+        function selectItem(index, type) {
+            let item, selectedArray, displayId;
+            
+            if (type === 'condition') {
+                item = allConditions.find(c => c.index === index);
+                selectedArray = selectedConditions;
+                displayId = 'selectedConditions';
+            } else if (type === 'observation') {
+                item = allObservations.find(o => o.index === index);
+                selectedArray = selectedObservations;
+                displayId = 'selectedObservations';
+            } else if (type === 'medication') {
+                item = allMedications.find(m => m.index === index);
+                selectedArray = selectedMedications;
+                displayId = 'selectedMedications';
+            }
+            
+            // 檢查是否已經選擇
+            if (selectedArray.some(selected => selected.index === index)) {
+                alert('此項目已經選擇過了');
+                return;
+            }
+            
+            selectedArray.push(item);
+            updateSelectedDisplay(displayId, selectedArray, type);
+        }
+
+        // 移除選擇的項目
+        function removeItem(index, type) {
+            let selectedArray, displayId;
+            
+            if (type === 'condition') {
+                selectedArray = selectedConditions;
+                displayId = 'selectedConditions';
+                selectedConditions = selectedConditions.filter(item => item.index !== index);
+            } else if (type === 'observation') {
+                selectedArray = selectedObservations;
+                displayId = 'selectedObservations';
+                selectedObservations = selectedObservations.filter(item => item.index !== index);
+            } else if (type === 'medication') {
+                selectedArray = selectedMedications;
+                displayId = 'selectedMedications';
+                selectedMedications = selectedMedications.filter(item => item.index !== index);
+            }
+            
+            updateSelectedDisplay(displayId, selectedArray, type);
+        }
+
+        // 更新已選擇項目的顯示
+        function updateSelectedDisplay(displayId, items, type) {
+            // 更新統一總結區域
+            updateSummaryDisplay();
+        }
+        
+        // 更新統一總結區域
+        function updateSummaryDisplay() {
+            // 更新疾病總結
+            updateSummarySection('conditionSummary', 'conditionCount', selectedConditions, 'condition', '疾病');
+            
+            // 更新觀察項目總結
+            updateSummarySection('observationSummary', 'observationCount', selectedObservations, 'observation', '觀察項目');
+            
+            // 更新藥物總結
+            updateSummarySection('medicationSummary', 'medicationCount', selectedMedications, 'medication', '藥物');
+        }
+        
+        // 更新特定類型的總結區域
+        function updateSummarySection(summaryId, countId, items, type, typeName) {
+            const summaryContainer = document.getElementById(summaryId);
+            const countBadge = document.getElementById(countId);
+            
+            countBadge.textContent = items.length;
+            
+            if (items.length === 0) {
+                summaryContainer.innerHTML = `<p class="text-muted small mb-0">尚未選擇任何${typeName}</p>`;
+                return;
+            }
+            
+            summaryContainer.innerHTML = items.map(item => `
+                <div class="summary-item ${type}">
+                    <div style="padding-right: 25px;">
+                        <strong>${item.display}</strong>
+                        <br><small class="text-muted">${item.code}</small>
+                    </div>
+                    <button class="remove-btn" onclick="removeItem(${item.index}, '${type}')" title="移除">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // 獲取類型名稱
+        function getTypeName(type) {
+            const names = {
+                'condition': '疾病',
+                'observation': '觀察項目',
+                'medication': '藥物'
+            };
+            return names[type] || '項目';
+        }
+
+        // 設置事件監聽器
+        function setupEventListeners() {
+            // 搜尋框
+            document.getElementById('conditionSearch').addEventListener('input', function(e) {
+                const category = document.getElementById('conditionCategory').value;
+                loadConditions(category, e.target.value);
+            });
+            
+            document.getElementById('observationSearch').addEventListener('input', function(e) {
+                const category = document.getElementById('observationCategory').value;
+                loadObservations(category, e.target.value);
+            });
+            
+            document.getElementById('medicationSearch').addEventListener('input', function(e) {
+                const category = document.getElementById('medicationCategory').value;
+                loadMedications(category, e.target.value);
+            });
+            
+            // 類別選擇器
+            document.getElementById('conditionCategory').addEventListener('change', function(e) {
+                const search = document.getElementById('conditionSearch').value;
+                loadConditions(e.target.value, search);
+            });
+            
+            document.getElementById('observationCategory').addEventListener('change', function(e) {
+                const search = document.getElementById('observationSearch').value;
+                loadObservations(e.target.value, search);
+            });
+            
+            document.getElementById('medicationCategory').addEventListener('change', function(e) {
+                const search = document.getElementById('medicationSearch').value;
+                loadMedications(e.target.value, search);
+            });
+            
+            // 選項卡切換時載入資料
+            document.getElementById('observations-tab').addEventListener('shown.bs.tab', function() {
+                if (allObservations.length === 0) {
+                    loadObservations();
+                }
+            });
+            
+            document.getElementById('medications-tab').addEventListener('shown.bs.tab', function() {
+                if (allMedications.length === 0) {
+                    loadMedications();
+                }
+            });
+            
+            // 頂部上傳選項
+            document.getElementById('uploadToServerTop').addEventListener('change', function(e) {
+                document.getElementById('serverOptionsTop').style.display = e.target.checked ? 'block' : 'none';
+            });
+            
+            document.getElementById('serverChoiceTop').addEventListener('change', function(e) {
+                document.getElementById('customServerTop').style.display = e.target.value === '3' ? 'block' : 'none';
+            });
+            
+            // 頂部生成按鈕
+            document.getElementById('generateBtnTop').addEventListener('click', generateCustomPatient);
+        }
+
+        // 生成自定義病人資料
+        async function generateCustomPatient() {
+            // 檢查是否至少選擇了一個項目
+            if (selectedConditions.length === 0 && selectedObservations.length === 0 && selectedMedications.length === 0) {
+                alert('請至少選擇一個疾病、觀察項目或藥物');
+                return;
+            }
+            
+            const topResults = document.getElementById('topResults');
+            const generateBtnTop = document.getElementById('generateBtnTop');
+            
+            // 顯示載入狀態在頂部
+            showTopLoading();
+            generateBtnTop.disabled = true;
+            
+            try {
+                const requestData = {
+                    conditions: selectedConditions.map(item => item.index),
+                    observations: selectedObservations.map(item => item.index),
+                    medications: selectedMedications.map(item => item.index),
+                    upload: document.getElementById('uploadToServerTop').checked,
+                    server_choice: document.getElementById('serverChoiceTop').value,
+                    custom_server: document.getElementById('customServerTop').value
+                };
+                
+                const response = await fetch('/generate_custom', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showTopResults(result);
+                } else {
+                    throw new Error(result.error || '生成失敗');
+                }
+                
+            } catch (error) {
+                console.error('生成失敗:', error);
+                showTopError(error.message);
+            } finally {
+                generateBtnTop.disabled = false;
+            }
+        }
+        
+        // 在頂部顯示載入狀態
+        function showTopLoading() {
+            const topResults = document.getElementById('topResults');
+            topResults.innerHTML = `
+                <div class="alert alert-info">
+                    <div class="d-flex align-items-center">
+                        <div class="spinner-border spinner-border-sm me-3" role="status">
+                            <span class="visually-hidden">載入中...</span>
+                        </div>
+                        <div>
+                            <h6 class="mb-1"><i class="fas fa-magic me-2"></i>正在生成病人資料...</h6>
+                            <small>請稍候，正在處理您選擇的項目</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+            topResults.style.display = 'block';
+        }
+        
+        // 在頂部顯示成功結果
+        function showTopResults(result) {
+            const topResults = document.getElementById('topResults');
+            
+            let uploadInfo = '';
+            if (result.upload) {
+                if (result.upload.success) {
+                    uploadInfo = `
+                        <div class="alert alert-success mt-2">
+                            <h6><i class="fas fa-cloud-upload-alt me-2"></i>上傳成功</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>伺服器:</strong> ${result.upload.server_url}</p>
+                                    <p class="mb-0"><strong>病人 ID:</strong> ${result.upload.patient_id}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1">
+                                        <span class="badge bg-danger me-1">${result.upload.uploaded_conditions}</span> 疾病 |
+                                        <span class="badge bg-success me-1">${result.upload.uploaded_observations}</span> 觀察 |
+                                        <span class="badge bg-info me-1">${result.upload.uploaded_medications}</span> 藥物 |
+                                        <span class="badge bg-warning">${result.upload.uploaded_medication_requests}</span> 處方
+                                    </p>
+                                    ${result.upload.errors.length > 0 ? `<p class="mb-0 text-warning"><small>錯誤: ${result.upload.errors.length} 個</small></p>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    uploadInfo = `
+                        <div class="alert alert-warning mt-2">
+                            <h6><i class="fas fa-exclamation-triangle me-2"></i>上傳失敗</h6>
+                            <p class="mb-0">請檢查伺服器設定或網路連線</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            topResults.innerHTML = `
+                <div class="alert alert-success">
+                    <h5><i class="fas fa-check-circle me-2"></i>生成成功！</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>病人姓名:</strong> ${result.patient_name}</p>
+                            <p class="mb-0"><strong>檔案名稱:</strong> ${result.filename}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-0">
+                                <span class="badge bg-danger me-1">${result.stats.conditions}</span> 疾病 |
+                                <span class="badge bg-success me-1">${result.stats.observations}</span> 觀察 |
+                                <span class="badge bg-info me-1">${result.stats.medications}</span> 藥物 |
+                                <span class="badge bg-warning">${result.stats.medication_requests}</span> 處方
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                ${uploadInfo}
+                <div class="text-center mt-2">
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="clearTopResults()">
+                        <i class="fas fa-times me-2"></i>清除結果
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm ms-2" onclick="generateAnother()">
+                        <i class="fas fa-plus me-2"></i>生成另一個病人
+                    </button>
+                </div>
+            `;
+            topResults.style.display = 'block';
+        }
+        
+        // 在頂部顯示錯誤
+        function showTopError(errorMessage) {
+            const topResults = document.getElementById('topResults');
+            topResults.innerHTML = `
+                <div class="alert alert-danger">
+                    <h6><i class="fas fa-exclamation-triangle me-2"></i>生成失敗</h6>
+                    <p class="mb-0">${errorMessage}</p>
+                    <div class="text-center mt-2">
+                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="clearTopResults()">
+                            <i class="fas fa-times me-2"></i>清除錯誤
+                        </button>
+                    </div>
+                </div>
+            `;
+            topResults.style.display = 'block';
+        }
+        
+        // 清除頂部結果
+        function clearTopResults() {
+            const topResults = document.getElementById('topResults');
+            topResults.style.display = 'none';
+            topResults.innerHTML = '';
+        }
+        
+        // 生成另一個病人（清除當前選擇）
+        function generateAnother() {
+            // 清除所有選擇
+            selectedConditions = [];
+            selectedObservations = [];
+            selectedMedications = [];
+            
+            // 更新顯示
+            updateSummaryDisplay();
+            
+            // 清除結果
+            clearTopResults();
+            
+            // 切換到第一個選項卡
+            document.getElementById('conditions-tab').click();
+        }
+
+        // 顯示結果（保留原函數以防其他地方使用）
+        function displayResults(result) {
+            const results = document.getElementById('results');
+            
+            let uploadInfo = '';
+            if (result.upload) {
+                if (result.upload.success) {
+                    uploadInfo = `
+                        <div class="alert alert-success">
+                            <h6><i class="fas fa-cloud-upload-alt me-2"></i>上傳成功</h6>
+                            <p class="mb-1">伺服器: ${result.upload.server_url}</p>
+                            <p class="mb-1">病人 ID: ${result.upload.patient_id}</p>
+                            <p class="mb-0">
+                                疾病: ${result.upload.uploaded_conditions} 個 | 
+                                觀察: ${result.upload.uploaded_observations} 個 | 
+                                藥物: ${result.upload.uploaded_medications} 個 | 
+                                處方: ${result.upload.uploaded_medication_requests} 個
+                            </p>
+                            ${result.upload.errors.length > 0 ? `<p class="mb-0 text-warning">錯誤: ${result.upload.errors.length} 個</p>` : ''}
+                        </div>
+                    `;
+                } else {
+                    uploadInfo = `
+                        <div class="alert alert-danger">
+                            <h6><i class="fas fa-exclamation-triangle me-2"></i>上傳失敗</h6>
+                            <p class="mb-0">請檢查伺服器設定或網路連線</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            results.innerHTML = `
+                <div class="card">
+                    <div class="card-body">
+                        <div class="alert alert-success">
+                            <h5><i class="fas fa-check-circle me-2"></i>生成成功</h5>
+                            <p class="mb-1">病人姓名: <strong>${result.patient_name}</strong></p>
+                            <p class="mb-1">檔案名稱: ${result.filename}</p>
+                            <p class="mb-0">
+                                疾病: ${result.stats.conditions} 個 | 
+                                觀察: ${result.stats.observations} 個 | 
+                                藥物: ${result.stats.medications} 個 | 
+                                處方: ${result.stats.medication_requests} 個
+                            </p>
+                        </div>
+                        
+                        ${uploadInfo}
+                        
+                        <div class="text-center mt-3">
+                            <button type="button" class="btn btn-primary" onclick="location.reload()">
+                                <i class="fas fa-plus me-2"></i>生成另一個病人
+                            </button>
+                            <a href="/" class="btn btn-outline-primary ms-2">
+                                <i class="fas fa-arrow-left me-2"></i>返回批量生成
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            results.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

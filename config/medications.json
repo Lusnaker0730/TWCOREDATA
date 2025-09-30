@@ -1,0 +1,97 @@
+{
+  "description": "台灣常見藥物資料庫 - 使用 RxNorm 和 ATC 代碼",
+  "version": "1.0.0",
+  "last_updated": "2025-09-30",
+  "categories": {
+    "cardiovascular": {
+      "name": "心血管藥物",
+      "medications": [
+        {"code": "197361", "display": "Amlodipine 5mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "C08CA01", "category": "心血管藥物", "dosage_form": "tablet", "strength": "5mg"},
+        {"code": "29046", "display": "Lisinopril 10mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "C09AA03", "category": "心血管藥物", "dosage_form": "tablet", "strength": "10mg"},
+        {"code": "83367", "display": "Atorvastatin 20mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "C10AA05", "category": "心血管藥物", "dosage_form": "tablet", "strength": "20mg"},
+        {"code": "32968", "display": "Metoprolol 50mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "C07AB02", "category": "心血管藥物", "dosage_form": "tablet", "strength": "50mg"},
+        {"code": "4603", "display": "Aspirin 100mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "B01AC06", "category": "心血管藥物", "dosage_form": "tablet", "strength": "100mg"},
+        {"code": "32592", "display": "Losartan 50mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "C09CA01", "category": "心血管藥物", "dosage_form": "tablet", "strength": "50mg"}
+      ]
+    },
+    "diabetes": {
+      "name": "糖尿病藥物",
+      "medications": [
+        {"code": "6809", "display": "Metformin 500mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "A10BA02", "category": "糖尿病藥物", "dosage_form": "tablet", "strength": "500mg"},
+        {"code": "274783", "display": "Glimepiride 2mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "A10BB12", "category": "糖尿病藥物", "dosage_form": "tablet", "strength": "2mg"},
+        {"code": "73044", "display": "Gliclazide 80mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "A10BB09", "category": "糖尿病藥物", "dosage_form": "tablet", "strength": "80mg"},
+        {"code": "253182", "display": "Sitagliptin 100mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "A10BH01", "category": "糖尿病藥物", "dosage_form": "tablet", "strength": "100mg"}
+      ]
+    },
+    "antibiotics": {
+      "name": "抗生素",
+      "medications": [
+        {"code": "723", "display": "Amoxicillin 500mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "J01CA04", "category": "抗生素", "dosage_form": "capsule", "strength": "500mg"},
+        {"code": "2551", "display": "Cephalexin 500mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "J01DB01", "category": "抗生素", "dosage_form": "capsule", "strength": "500mg"},
+        {"code": "3640", "display": "Erythromycin 250mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "J01FA01", "category": "抗生素", "dosage_form": "tablet", "strength": "250mg"},
+        {"code": "2670", "display": "Ciprofloxacin 500mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "J01MA02", "category": "抗生素", "dosage_form": "tablet", "strength": "500mg"}
+      ]
+    },
+    "analgesics": {
+      "name": "止痛藥物",
+      "medications": [
+        {"code": "161", "display": "Acetaminophen 500mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "N02BE01", "category": "止痛藥物", "dosage_form": "tablet", "strength": "500mg"},
+        {"code": "5640", "display": "Ibuprofen 400mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "M01AE01", "category": "止痛藥物", "dosage_form": "tablet", "strength": "400mg"},
+        {"code": "3355", "display": "Diclofenac 50mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "M01AB05", "category": "止痛藥物", "dosage_form": "tablet", "strength": "50mg"},
+        {"code": "7052", "display": "Naproxen 250mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "M01AE02", "category": "止痛藥物", "dosage_form": "tablet", "strength": "250mg"}
+      ]
+    },
+    "gastrointestinal": {
+      "name": "胃腸藥物",
+      "medications": [
+        {"code": "7646", "display": "Omeprazole 20mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "A02BC01", "category": "胃腸藥物", "dosage_form": "capsule", "strength": "20mg"},
+        {"code": "8638", "display": "Ranitidine 150mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "A02BA02", "category": "胃腸藥物", "dosage_form": "tablet", "strength": "150mg"},
+        {"code": "3521", "display": "Domperidone 10mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "A03FA03", "category": "胃腸藥物", "dosage_form": "tablet", "strength": "10mg"},
+        {"code": "6960", "display": "Mosapride 5mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "A03FA07", "category": "胃腸藥物", "dosage_form": "tablet", "strength": "5mg"}
+      ]
+    },
+    "respiratory": {
+      "name": "呼吸系統藥物",
+      "medications": [
+        {"code": "1256", "display": "Salbutamol 100mcg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "R03AC02", "category": "呼吸系統藥物", "dosage_form": "inhaler", "strength": "100mcg"},
+        {"code": "1998", "display": "Budesonide 200mcg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "R03BA02", "category": "呼吸系統藥物", "dosage_form": "inhaler", "strength": "200mcg"},
+        {"code": "1149", "display": "Theophylline 200mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "R03DA04", "category": "呼吸系統藥物", "dosage_form": "tablet", "strength": "200mg"},
+        {"code": "2670", "display": "Montelukast 10mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "R03DC03", "category": "呼吸系統藥物", "dosage_form": "tablet", "strength": "10mg"}
+      ]
+    },
+    "psychiatric": {
+      "name": "精神科藥物",
+      "medications": [
+        {"code": "3638", "display": "Sertraline 50mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "N06AB06", "category": "精神科藥物", "dosage_form": "tablet", "strength": "50mg"},
+        {"code": "3247", "display": "Fluoxetine 20mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "N06AB03", "category": "精神科藥物", "dosage_form": "capsule", "strength": "20mg"},
+        {"code": "2597", "display": "Lorazepam 1mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "N05BA06", "category": "精神科藥物", "dosage_form": "tablet", "strength": "1mg"},
+        {"code": "11289", "display": "Zolpidem 10mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "N05CF02", "category": "精神科藥物", "dosage_form": "tablet", "strength": "10mg"}
+      ]
+    },
+    "vitamins": {
+      "name": "維生素和營養補充品",
+      "medications": [
+        {"code": "11256", "display": "Vitamin D3 1000IU", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "A11CC05", "category": "維生素", "dosage_form": "tablet", "strength": "1000IU"},
+        {"code": "6057", "display": "Vitamin B12 500mcg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "B03BA01", "category": "維生素", "dosage_form": "tablet", "strength": "500mcg"},
+        {"code": "4064", "display": "Folic acid 5mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "B03BB01", "category": "維生素", "dosage_form": "tablet", "strength": "5mg"},
+        {"code": "6809", "display": "Calcium carbonate 500mg", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "A12AA04", "category": "維生素", "dosage_form": "tablet", "strength": "500mg"}
+      ]
+    },
+    "dermatological": {
+      "name": "皮膚科藥物",
+      "medications": [
+        {"code": "1191", "display": "Hydrocortisone 1% cream", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "D07AA02", "category": "皮膚科藥物", "dosage_form": "cream", "strength": "1%"},
+        {"code": "2556", "display": "Clotrimazole 1% cream", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "D01AC01", "category": "皮膚科藥物", "dosage_form": "cream", "strength": "1%"},
+        {"code": "1364", "display": "Betamethasone 0.1% cream", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "D07AC01", "category": "皮膚科藥物", "dosage_form": "cream", "strength": "0.1%"}
+      ]
+    },
+    "ophthalmological": {
+      "name": "眼科藥物",
+      "medications": [
+        {"code": "1723", "display": "Timolol 0.5% eye drops", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "S01ED01", "category": "眼科藥物", "dosage_form": "eye_drops", "strength": "0.5%"},
+        {"code": "2556", "display": "Chloramphenicol 0.5% eye drops", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "S01AA01", "category": "眼科藥物", "dosage_form": "eye_drops", "strength": "0.5%"},
+        {"code": "1191", "display": "Artificial tears", "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "atc": "S01XA20", "category": "眼科藥物", "dosage_form": "eye_drops", "strength": "N/A"}
+      ]
+    }
+  }
+}

@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  taiwan-fhir-generator:
+    build: .
+    container_name: taiwan-fhir-generator
+    ports:
+      - "5000:5000"
+    volumes:
+      # 掛載輸出目錄到主機，以便保存生成的檔案
+      - ./output:/app/output
+      # 掛載配置目錄，方便修改配置
+      - ./config:/app/config
+    environment:
+      - FLASK_ENV=production
+      - PYTHONPATH=/app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # 可選：添加nginx反向代理
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: taiwan-fhir-nginx
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf
+  #   depends_on:
+  #     - taiwan-fhir-generator
+  #   restart: unless-stopped
+
+networks:
+  default:
+    name: taiwan-fhir-network
