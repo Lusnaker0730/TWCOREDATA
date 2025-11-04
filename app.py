@@ -34,6 +34,99 @@ def custom():
     """自定義病人生成頁面"""
     return render_template('custom.html')
 
+@app.route('/dashboard')
+def dashboard():
+    """資料統計儀表板頁面"""
+    return render_template('dashboard.html')
+
+@app.route('/api/scenarios')
+def get_scenarios():
+    """獲取情境預設列表"""
+    try:
+        scenarios_file = Path('config/scenarios.json')
+        if scenarios_file.exists():
+            with open(scenarios_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                return jsonify(data)
+        else:
+            return jsonify({'scenarios': []})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/statistics')
+def get_statistics():
+    """獲取資料統計信息"""
+    try:
+        stats = {
+            'total_files': 0,
+            'total_patients': 0,
+            'total_encounters': 0,
+            'total_conditions': 0,
+            'total_observations': 0,
+            'total_medications': 0,
+            'total_medication_requests': 0,
+            'recent_generations': [],
+            'file_sizes': []
+        }
+        
+        # 讀取 complete_patients_fixed 目錄
+        output_dir = Path('output/complete_patients_fixed')
+        if output_dir.exists():
+            json_files = sorted(output_dir.glob('*.json'), key=lambda x: x.stat().st_mtime, reverse=True)
+            stats['total_files'] = len(json_files)
+            
+            for json_file in json_files[:10]:  # 只讀取最近10個檔案
+                try:
+                    with open(json_file, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                        
+                        # 統計各類資源
+                        for patient_data in data:
+                            stats['total_patients'] += 1
+                            stats['total_encounters'] += len(patient_data.get('encounters', []))
+                            stats['total_conditions'] += len(patient_data.get('conditions', []))
+                            stats['total_observations'] += len(patient_data.get('observations', []))
+                            stats['total_medications'] += len(patient_data.get('medications', []))
+                            stats['total_medication_requests'] += len(patient_data.get('medication_requests', []))
+                        
+                        # 記錄最近的生成
+                        file_stat = json_file.stat()
+                        stats['recent_generations'].append({
+                            'filename': json_file.name,
+                            'timestamp': datetime.fromtimestamp(file_stat.st_mtime).strftime('%Y-%m-%d %H:%M:%S'),
+                            'size': f'{file_stat.st_size / 1024:.2f} KB',
+                            'patients': len(data)
+                        })
+                        
+                except Exception as e:
+                    print(f"Error reading {json_file}: {e}")
+                    continue
+        
+        # 讀取 custom_patients 目錄
+        custom_dir = Path('output/custom_patients')
+        if custom_dir.exists():
+            custom_files = list(custom_dir.glob('*.json'))
+            stats['total_files'] += len(custom_files)
+            
+            for json_file in sorted(custom_files, key=lambda x: x.stat().st_mtime, reverse=True)[:5]:
+                try:
+                    with open(json_file, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                        if isinstance(data, dict):
+                            stats['total_patients'] += 1
+                            stats['total_encounters'] += len(data.get('encounters', []))
+                            stats['total_conditions'] += len(data.get('conditions', []))
+                            stats['total_observations'] += len(data.get('observations', []))
+                            stats['total_medications'] += len(data.get('medications', []))
+                            stats['total_medication_requests'] += len(data.get('medication_requests', []))
+                except Exception as e:
+                    continue
+        
+        return jsonify(stats)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/generate', methods=['POST'])
 def generate_data():
     """生成 FHIR 資料的 API 端點"""
@@ -48,6 +141,7 @@ def generate_data():
         num_conditions = int(request.form.get('num_conditions', 2))
         num_observations = int(request.form.get('num_observations', 3))
         num_medications = int(request.form.get('num_medications', 2))
+        num_encounters = int(request.form.get('num_encounters', 1))  # 新增就診記錄數量
         server_choice = request.form.get('server_choice', 'none')
         custom_server = request.form.get('custom_server', '')
         
@@ -60,6 +154,8 @@ def generate_data():
             return jsonify({'error': '觀察記錄數量必須在 0-50 之間'}), 400
         if num_medications < 0 or num_medications > 20:
             return jsonify({'error': '藥物數量必須在 0-20 之間'}), 400
+        if num_encounters < 0 or num_encounters > 10:
+            return jsonify({'error': '就診記錄數量必須在 0-10 之間'}), 400
         
         # 重置狀態
         generation_status = {
@@ -73,7 +169,7 @@ def generate_data():
         # 在背景執行緒中執行生成任務
         thread = threading.Thread(
             target=generate_data_background,
-            args=(num_patients, num_conditions, num_observations, num_medications, server_choice, custom_server)
+            args=(num_patients, num_conditions, num_observations, num_medications, num_encounters, server_choice, custom_server)
         )
         thread.daemon = True
         thread.start()
@@ -85,7 +181,7 @@ def generate_data():
     except Exception as e:
         return jsonify({'error': f'發生錯誤: {str(e)}'}), 500
 
-def generate_data_background(num_patients, num_conditions, num_observations, num_medications, server_choice, custom_server):
+def generate_data_background(num_patients, num_conditions, num_observations, num_medications, num_encounters, server_choice, custom_server):
     """背景執行緒中執行資料生成"""
     global generation_status
     
@@ -101,7 +197,7 @@ def generate_data_background(num_patients, num_conditions, num_observations, num
             generation_status['current_step'] = f'生成第 {i+1}/{num_patients} 個病人...'
             generation_status['progress'] = 10 + (i / num_patients) * 40
             
-            patient_data = generator.generate_complete_patient_data(num_conditions, num_observations, num_medications)
+            patient_data = generator.generate_complete_patient_data(num_conditions, num_observations, num_medications, num_encounters)
             all_patient_data.append(patient_data)
             time.sleep(0.1)  # 模擬處理時間
         
@@ -120,6 +216,7 @@ def generate_data_background(num_patients, num_conditions, num_observations, num
         for data in all_patient_data:
             save_data.append({
                 "patient": data["patient"],
+                "encounters": data["encounters"],
                 "conditions": data["conditions"],
                 "observations": data["observations"],
                 "medications": data["medications"],
@@ -156,6 +253,7 @@ def generate_data_background(num_patients, num_conditions, num_observations, num
             # 儲存上傳結果
             upload_result_file = f"upload_results_fixed_{timestamp}.json"
             successful_patients = sum(1 for r in upload_results if r["patient"])
+            total_encounters = sum(len(r.get("encounters", [])) for r in upload_results)
             total_conditions = sum(len(r["conditions"]) for r in upload_results)
             total_observations = sum(len(r["observations"]) for r in upload_results)
             total_medications = sum(len(r["medications"]) for r in upload_results)
@@ -169,6 +267,7 @@ def generate_data_background(num_patients, num_conditions, num_observations, num
                     "version": "web_ui",
                     "statistics": {
                         "patients": successful_patients,
+                        "encounters": total_encounters,
                         "conditions": total_conditions,
                         "observations": total_observations,
                         "medications": total_medications,
@@ -188,6 +287,7 @@ def generate_data_background(num_patients, num_conditions, num_observations, num
             'success': True,
             'filename': str(filepath),
             'num_patients': num_patients,
+            'num_encounters': num_encounters * num_patients,
             'num_conditions': num_conditions * num_patients,
             'num_observations': num_observations * num_patients,
             'num_medications': num_medications * num_patients,
@@ -199,6 +299,7 @@ def generate_data_background(num_patients, num_conditions, num_observations, num
             results['upload'] = {
                 'server_url': server_url,
                 'successful_patients': successful_patients,
+                'total_encounters': total_encounters,
                 'total_conditions': total_conditions,
                 'total_observations': total_observations,
                 'total_medications': total_medications,

@@ -299,6 +299,15 @@
         <div class="header">
             <h1><i class="fas fa-hospital"></i> 台灣 FHIR 病人資料生成器</h1>
             <p>快速生成符合台灣醫療標準的 FHIR 病人資料</p>
+            
+            <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+                <a href="/dashboard" style="background: rgba(255,255,255,0.2); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                    <i class="fas fa-chart-line"></i> 統計儀表板
+                </a>
+                <a href="/custom" style="background: rgba(255,255,255,0.2); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                    <i class="fas fa-user-edit"></i> 自定義生成
+                </a>
+            </div>
         </div>
 
         <div class="main-content">
@@ -307,6 +316,19 @@
                 <h2><i class="fas fa-cogs"></i> 生成設定</h2>
                 
                 <form id="generateForm">
+                    <!-- 情境預設選擇 -->
+                    <div class="form-group" style="background: linear-gradient(135deg, #f6f8fb 0%, #e9ecef 100%); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                        <label style="font-size: 1.1rem; color: #667eea; margin-bottom: 10px; display: block;">
+                            <i class="fas fa-magic"></i> 情境預設模式
+                        </label>
+                        <select id="scenario_select" style="width: 100%; padding: 12px; border: 2px solid #667eea; border-radius: 8px; font-size: 16px; margin-bottom: 10px;">
+                            <option value="">自訂設定（不使用預設）</option>
+                        </select>
+                        <p style="font-size: 0.9rem; color: #666; margin: 0;">
+                            <i class="fas fa-info-circle"></i> 選擇常見醫療情境，自動填入相關參數
+                        </p>
+                    </div>
+                    
                     <div class="form-row">
                         <div class="form-group">
                             <label for="num_patients">病人數量</label>
@@ -323,9 +345,15 @@
                         <input type="number" id="num_observations" name="num_observations" value="3" min="0" max="50" required>
                     </div>
 
-                    <div class="form-group">
-                        <label for="num_medications">每人藥物數量 (可設為0)</label>
-                        <input type="number" id="num_medications" name="num_medications" value="2" min="0" max="20" required>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="num_medications">每人藥物數量 (可設為0)</label>
+                            <input type="number" id="num_medications" name="num_medications" value="2" min="0" max="20" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="num_encounters">每人就診記錄數 (可設為0)</label>
+                            <input type="number" id="num_encounters" name="num_encounters" value="1" min="0" max="10" required>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -413,6 +441,46 @@
     </div>
 
     <script>
+        let scenariosData = [];
+        
+        // 載入情境預設
+        fetch('/api/scenarios')
+            .then(response => response.json())
+            .then(data => {
+                scenariosData = data.scenarios || [];
+                const select = document.getElementById('scenario_select');
+                
+                scenariosData.forEach(scenario => {
+                    const option = document.createElement('option');
+                    option.value = scenario.id;
+                    option.textContent = `${scenario.icon} ${scenario.name} - ${scenario.description}`;
+                    select.appendChild(option);
+                });
+            })
+            .catch(error => console.error('載入情境失敗:', error));
+        
+        // 情境選擇變更處理
+        document.getElementById('scenario_select').addEventListener('change', function() {
+            const scenarioId = this.value;
+            if (!scenarioId) return;
+            
+            const scenario = scenariosData.find(s => s.id === scenarioId);
+            if (scenario) {
+                // 自動填入推薦數值
+                document.getElementById('num_patients').value = scenario.recommended_patient_count;
+                document.getElementById('num_conditions').value = scenario.conditions.length;
+                document.getElementById('num_observations').value = scenario.observations.length;
+                document.getElementById('num_medications').value = scenario.medications.length;
+                document.getElementById('num_encounters').value = scenario.num_encounters;
+                
+                // 顯示提示
+                alert(`✨ 已套用 "${scenario.name}" 情境設定！\n\n` +
+                      `🏥 建議生成: ${scenario.recommended_patient_count} 個病人\n` +
+                      `📋 包含: ${scenario.conditions.length} 種疾病、${scenario.observations.length} 項觀察、${scenario.medications.length} 種藥物\n` +
+                      `👨‍⚕️ 就診記錄: ${scenario.num_encounters} 次`);
+            }
+        });
+        
         // 載入系統資訊
         fetch('/api/info')
             .then(response => response.json())
@@ -515,6 +583,7 @@
             
             html += '<div class="stats">';
             html += `<div class="stat-item"><div class="number">${results.num_patients}</div><div class="label">病人</div></div>`;
+            html += `<div class="stat-item"><div class="number">${results.num_encounters || 0}</div><div class="label">就診記錄</div></div>`;
             html += `<div class="stat-item"><div class="number">${results.num_conditions}</div><div class="label">疾病</div></div>`;
             html += `<div class="stat-item"><div class="number">${results.num_observations}</div><div class="label">觀察</div></div>`;
             html += `<div class="stat-item"><div class="number">${results.num_medications}</div><div class="label">藥物</div></div>`;
@@ -526,6 +595,7 @@
                 html += '<h3><i class="fas fa-cloud-upload-alt"></i> 上傳結果</h3>';
                 html += `<p><strong>伺服器:</strong> ${results.upload.server_url}</p>`;
                 html += `<p><strong>成功上傳病人:</strong> ${results.upload.successful_patients}</p>`;
+                html += `<p><strong>成功上傳就診記錄:</strong> ${results.upload.total_encounters || 0}</p>`;
                 html += `<p><strong>成功上傳疾病:</strong> ${results.upload.total_conditions}</p>`;
                 html += `<p><strong>成功上傳觀察:</strong> ${results.upload.total_observations}</p>`;
                 html += `<p><strong>成功上傳藥物:</strong> ${results.upload.total_medications}</p>`;

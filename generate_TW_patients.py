@@ -225,6 +225,112 @@ class TWFHIRGeneratorFixed:
         
         return patient
 
+    def generate_encounter(self, patient_id, patient_name, encounter_type="outpatient"):
+        """
+        生成就診記錄 (Encounter) 資源
+        
+        Args:
+            patient_id: 病人ID
+            patient_name: 病人姓名
+            encounter_type: 就診類型 ('outpatient': 門診, 'inpatient': 住院, 'emergency': 急診)
+            
+        Returns:
+            Encounter FHIR 資源
+        """
+        encounter_id = str(uuid.uuid4())
+        
+        # 定義就診類型的映射
+        encounter_types = {
+            "outpatient": {
+                "code": "AMB",
+                "display": "門診",
+                "display_en": "Ambulatory"
+            },
+            "inpatient": {
+                "code": "IMP",
+                "display": "住院",
+                "display_en": "Inpatient"
+            },
+            "emergency": {
+                "code": "EMER",
+                "display": "急診",
+                "display_en": "Emergency"
+            }
+        }
+        
+        encounter_info = encounter_types.get(encounter_type, encounter_types["outpatient"])
+        
+        # 生成就診時間（過去6個月內的隨機時間）
+        visit_date = datetime.now() - timedelta(days=random.randint(1, 180))
+        
+        # 根據就診類型設定就診時長
+        if encounter_type == "outpatient":
+            duration_minutes = random.randint(15, 60)  # 門診：15-60分鐘
+        elif encounter_type == "emergency":
+            duration_minutes = random.randint(60, 240)  # 急診：1-4小時
+        else:  # inpatient
+            duration_minutes = random.randint(1440, 10080)  # 住院：1-7天
+        
+        end_date = visit_date + timedelta(minutes=duration_minutes)
+        
+        # 台灣時區
+        tz_offset = "+08:00"
+        
+        narrative_text = f"""
+        <div xmlns="http://www.w3.org/1999/xhtml">
+            <p><strong>就診資訊</strong></p>
+            <ul>
+                <li>病人: {patient_name}</li>
+                <li>就診類型: {encounter_info['display']}</li>
+                <li>就診日期: {visit_date.strftime('%Y-%m-%d %H:%M')}</li>
+                <li>結束時間: {end_date.strftime('%Y-%m-%d %H:%M')}</li>
+                <li>狀態: 已完成</li>
+            </ul>
+        </div>
+        """.strip()
+        
+        encounter = {
+            "resourceType": "Encounter",
+            "id": encounter_id,
+            "text": {
+                "status": "generated",
+                "div": narrative_text
+            },
+            "status": "finished",
+            "class": {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+                "code": encounter_info["code"],
+                "display": encounter_info["display_en"]
+            },
+            "type": [
+                {
+                    "coding": [
+                        {
+                            "system": "http://snomed.info/sct",
+                            "code": "185349003" if encounter_type == "outpatient" else "32485007",
+                            "display": encounter_info["display"]
+                        }
+                    ],
+                    "text": encounter_info["display"]
+                }
+            ],
+            "subject": {
+                "reference": f"Patient/{patient_id}",
+                "display": patient_name
+            },
+            "period": {
+                "start": visit_date.strftime(f"%Y-%m-%dT%H:%M:%S{tz_offset}"),
+                "end": end_date.strftime(f"%Y-%m-%dT%H:%M:%S{tz_offset}")
+            },
+            "reasonCode": [
+                {
+                    "text": "一般就診" if encounter_type == "outpatient" else "住院治療" if encounter_type == "inpatient" else "急診就醫"
+                }
+            ]
+        }
+        
+        return encounter
+
     def generate_condition(self, patient_id, patient_name):
         """修復版：为指定病人生成 Condition 資源"""
         condition_info = random.choice(self.conditions)
@@ -687,12 +793,21 @@ class TWFHIRGeneratorFixed:
         unit = re.sub(r'\d+(?:\.\d+)?', '', strength).strip()
         return unit if unit else "mg"
 
-    def generate_complete_patient_data(self, num_conditions=2, num_observations=3, num_medications=2):
-        """生成一個完整的病人資料（包含 Patient、Condition、Observation、Medication、MedicationRequest）- 確保不重复"""
+    def generate_complete_patient_data(self, num_conditions=2, num_observations=3, num_medications=2, num_encounters=1):
+        """生成一個完整的病人資料（包含 Patient、Encounter、Condition、Observation、Medication、MedicationRequest）- 確保不重复"""
         # 生成 Patient
         patient = self.generate_patient()
         patient_id = patient["id"]
         patient_name = patient["name"][0]["text"]
+        
+        # 生成 Encounters (就診記錄)
+        encounters = []
+        if num_encounters > 0:
+            encounter_types = ["outpatient", "outpatient", "outpatient", "emergency", "inpatient"]  # 門診機率較高
+            for _ in range(num_encounters):
+                encounter_type = random.choice(encounter_types)
+                encounter = self.generate_encounter(patient_id, patient_name, encounter_type)
+                encounters.append(encounter)
         
         # 生成不重複的 Conditions
         conditions = []
@@ -742,13 +857,14 @@ class TWFHIRGeneratorFixed:
         
         return {
             "patient": patient,
+            "encounters": encounters,
             "conditions": conditions,
             "observations": observations,
             "medications": medications,
             "medication_requests": medication_requests
         }
 
-    def generate_custom_patient_data(self, selected_conditions=None, selected_observations=None, selected_medications=None):
+    def generate_custom_patient_data(self, selected_conditions=None, selected_observations=None, selected_medications=None, num_encounters=1):
         """
         生成自定義的單一病人資料
         
@@ -756,6 +872,7 @@ class TWFHIRGeneratorFixed:
             selected_conditions: 指定的疾病列表 (可以是索引或疾病代碼)
             selected_observations: 指定的觀察項目列表 (可以是索引或觀察代碼)
             selected_medications: 指定的藥物列表 (可以是索引或藥物代碼)
+            num_encounters: 要生成的就診記錄數量 (預設1)
             
         Returns:
             完整的病人資料字典
@@ -764,6 +881,15 @@ class TWFHIRGeneratorFixed:
         patient = self.generate_patient()
         patient_id = patient["id"]
         patient_name = patient["name"][0]["text"]
+        
+        # 生成 Encounters (就診記錄)
+        encounters = []
+        if num_encounters > 0:
+            encounter_types = ["outpatient", "outpatient", "outpatient", "emergency", "inpatient"]  # 門診機率較高
+            for _ in range(num_encounters):
+                encounter_type = random.choice(encounter_types)
+                encounter = self.generate_encounter(patient_id, patient_name, encounter_type)
+                encounters.append(encounter)
         
         # 處理指定的 Conditions
         conditions = []
@@ -836,6 +962,7 @@ class TWFHIRGeneratorFixed:
         
         return {
             "patient": patient,
+            "encounters": encounters,
             "conditions": conditions,
             "observations": observations,
             "medications": medications,
@@ -1037,7 +1164,7 @@ class TWFHIRGeneratorFixed:
         }
         
         try:
-            response = requests.post(url, json=resource, headers=headers, timeout=30)
+            response = requests.post(url, json=resource, headers=headers, timeout=60)  # 增加超時時間到60秒
             
             if response.status_code in [200, 201]:
                 response_data = response.json()
@@ -1053,6 +1180,7 @@ class TWFHIRGeneratorFixed:
         """上傳完整的病人資料到伺服器"""
         results = {
             "patient": None,
+            "encounters": [],
             "conditions": [],
             "observations": [],
             "medications": [],
@@ -1070,6 +1198,22 @@ class TWFHIRGeneratorFixed:
             
             # 更新 Patient ID 引用
             new_patient_id = result
+            
+            # 上傳 Encounters (就診記錄)
+            if 'encounters' in patient_data:
+                for i, encounter in enumerate(patient_data['encounters']):
+                    encounter['subject']['reference'] = f"Patient/{new_patient_id}"
+                    print(f"📤 上傳 Encounter {i+1}: {encounter['class']['display']}")
+                    
+                    success, result = self.upload_resource_to_server(encounter, server_url)
+                    if success:
+                        results["encounters"].append(result)
+                        print(f"   ✅ Encounter 上傳成功，ID: {result}")
+                    else:
+                        results["errors"].append(f"Encounter {i+1}: {result}")
+                        print(f"   ❌ Encounter 上傳失敗: {result}")
+                    
+                    time.sleep(0.5)  # 避免過於頻繁的請求
             
             # 上傳 Conditions
             for i, condition in enumerate(patient_data['conditions']):

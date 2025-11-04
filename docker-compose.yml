@@ -1,8 +1,8 @@
-version: '3.8'
-
 services:
   taiwan-fhir-generator:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: taiwan-fhir-generator
     ports:
       - "5000:5000"
