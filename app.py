@@ -234,7 +234,9 @@ def generate_data_background(num_patients, num_conditions, num_observations, num
             generation_status['current_step'] = '上傳資料到 FHIR 伺服器...'
             
             # 確定伺服器 URL
-            if server_choice == 'twcore':
+            if server_choice == 'local':
+                server_url = "http://hapi-fhir:8080/fhir"
+            elif server_choice == 'twcore':
                 server_url = "https://twcore.hapi.fhir.tw/fhir"
             elif server_choice == 'hapi':
                 server_url = "http://hapi.fhir.org/baseR4"
@@ -435,7 +437,9 @@ def generate_custom():
         
         # 如果需要上傳
         if data.get('upload', False):
-            if server_choice == "1":
+            if server_choice == "0":
+                server_url = "http://hapi-fhir:8080/fhir"
+            elif server_choice == "1":
                 server_url = "https://twcore.hapi.fhir.tw/fhir"
             elif server_choice == "2":
                 server_url = "http://hapi.fhir.org/baseR4"
