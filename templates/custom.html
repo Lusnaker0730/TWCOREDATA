@@ -327,6 +327,45 @@
                                             </div>
                                         </div>
                                         
+                                        <!-- 時間範圍設定 -->
+                                        <div class="row mt-3">
+                                            <div class="col-12">
+                                                <div class="card border-0" style="background: #f8f9fa; border-radius: 10px;">
+                                                    <div class="card-body py-2 px-3">
+                                                        <p class="mb-2" style="font-weight: 600; color: #667eea; font-size: 0.9rem;">
+                                                            <i class="fas fa-calendar-alt me-1"></i> 時間範圍設定（選填，留空則隨機）
+                                                        </p>
+                                                        <div class="row g-2">
+                                                            <div class="col-md-4">
+                                                                <label class="form-label" style="font-size: 0.8rem;">就診日期</label>
+                                                                <div class="d-flex gap-1">
+                                                                    <input type="date" class="form-control form-control-sm" id="encounter_date_from" placeholder="起始">
+                                                                    <span class="align-self-center">~</span>
+                                                                    <input type="date" class="form-control form-control-sm" id="encounter_date_to" placeholder="結束">
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <label class="form-label" style="font-size: 0.8rem;">疾病發病日期</label>
+                                                                <div class="d-flex gap-1">
+                                                                    <input type="date" class="form-control form-control-sm" id="condition_date_from" placeholder="起始">
+                                                                    <span class="align-self-center">~</span>
+                                                                    <input type="date" class="form-control form-control-sm" id="condition_date_to" placeholder="結束">
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <label class="form-label" style="font-size: 0.8rem;">觀察記錄日期</label>
+                                                                <div class="d-flex gap-1">
+                                                                    <input type="date" class="form-control form-control-sm" id="observation_date_from" placeholder="起始">
+                                                                    <span class="align-self-center">~</span>
+                                                                    <input type="date" class="form-control form-control-sm" id="observation_date_to" placeholder="結束">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <!-- 生成和上傳選項 -->
                                         <div class="row mt-3">
                                             <div class="col-12">
@@ -819,7 +858,13 @@
                     medications: selectedMedications.map(item => item.index),
                     upload: document.getElementById('uploadToServerTop').checked,
                     server_choice: document.getElementById('serverChoiceTop').value,
-                    custom_server: document.getElementById('customServerTop').value
+                    custom_server: document.getElementById('customServerTop').value,
+                    encounter_date_from: document.getElementById('encounter_date_from').value || null,
+                    encounter_date_to: document.getElementById('encounter_date_to').value || null,
+                    condition_date_from: document.getElementById('condition_date_from').value || null,
+                    condition_date_to: document.getElementById('condition_date_to').value || null,
+                    observation_date_from: document.getElementById('observation_date_from').value || null,
+                    observation_date_to: document.getElementById('observation_date_to').value || null,
                 };
                 
                 const response = await fetch('/generate_custom', {

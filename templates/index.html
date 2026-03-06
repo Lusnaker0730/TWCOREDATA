@@ -356,6 +356,45 @@
                         </div>
                     </div>
 
+                    <!-- 時間範圍設定 -->
+                    <div class="form-group" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <label style="font-size: 1rem; color: #667eea; margin-bottom: 10px; display: block;">
+                            <i class="fas fa-calendar-alt"></i> 時間範圍設定（選填）
+                        </label>
+                        <p style="font-size: 0.85rem; color: #888; margin-bottom: 12px;">留空則自動使用隨機日期</p>
+
+                        <div class="form-row" style="margin-bottom: 10px;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="encounter_date_from" style="font-size: 0.85rem;">就診日期起始</label>
+                                <input type="date" id="encounter_date_from" name="encounter_date_from">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="encounter_date_to" style="font-size: 0.85rem;">就診日期結束</label>
+                                <input type="date" id="encounter_date_to" name="encounter_date_to">
+                            </div>
+                        </div>
+                        <div class="form-row" style="margin-bottom: 10px;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="condition_date_from" style="font-size: 0.85rem;">疾病發病日期起始</label>
+                                <input type="date" id="condition_date_from" name="condition_date_from">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="condition_date_to" style="font-size: 0.85rem;">疾病發病日期結束</label>
+                                <input type="date" id="condition_date_to" name="condition_date_to">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="observation_date_from" style="font-size: 0.85rem;">觀察記錄日期起始</label>
+                                <input type="date" id="observation_date_from" name="observation_date_from">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="observation_date_to" style="font-size: 0.85rem;">觀察記錄日期結束</label>
+                                <input type="date" id="observation_date_to" name="observation_date_to">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label for="server_choice">上傳選項</label>
                         <select id="server_choice" name="server_choice">

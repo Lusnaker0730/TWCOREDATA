@@ -15,6 +15,28 @@ from generate_TW_patients import TWFHIRGeneratorFixed
 
 app = Flask(__name__)
 
+
+def _parse_date(value):
+    """將字串日期 (YYYY-MM-DD) 轉為 datetime，無效或空值回傳 None"""
+    if not value:
+        return None
+    try:
+        return datetime.strptime(value, '%Y-%m-%d')
+    except ValueError:
+        return None
+
+
+def _parse_date_params(getter):
+    """從 form/dict getter 解析 6 個時間範圍參數"""
+    return {
+        'encounter_date_from': _parse_date(getter('encounter_date_from')),
+        'encounter_date_to': _parse_date(getter('encounter_date_to')),
+        'condition_date_from': _parse_date(getter('condition_date_from')),
+        'condition_date_to': _parse_date(getter('condition_date_to')),
+        'observation_date_from': _parse_date(getter('observation_date_from')),
+        'observation_date_to': _parse_date(getter('observation_date_to')),
+    }
+
 # 全域變數來追蹤生成狀態
 generation_status = {
     'is_running': False,
@@ -144,7 +166,10 @@ def generate_data():
         num_encounters = int(request.form.get('num_encounters', 1))  # 新增就診記錄數量
         server_choice = request.form.get('server_choice', 'none')
         custom_server = request.form.get('custom_server', '')
-        
+
+        # 解析可選的時間範圍參數
+        date_params = _parse_date_params(request.form.get)
+
         # 驗證輸入
         if num_patients < 1 or num_patients > 100:
             return jsonify({'error': '病人數量必須在 1-100 之間'}), 400
@@ -169,7 +194,8 @@ def generate_data():
         # 在背景執行緒中執行生成任務
         thread = threading.Thread(
             target=generate_data_background,
-            args=(num_patients, num_conditions, num_observations, num_medications, num_encounters, server_choice, custom_server)
+            args=(num_patients, num_conditions, num_observations, num_medications, num_encounters, server_choice, custom_server),
+            kwargs=date_params
         )
         thread.daemon = True
         thread.start()
@@ -181,7 +207,10 @@ def generate_data():
     except Exception as e:
         return jsonify({'error': f'發生錯誤: {str(e)}'}), 500
 
-def generate_data_background(num_patients, num_conditions, num_observations, num_medications, num_encounters, server_choice, custom_server):
+def generate_data_background(num_patients, num_conditions, num_observations, num_medications, num_encounters, server_choice, custom_server,
+                             encounter_date_from=None, encounter_date_to=None,
+                             condition_date_from=None, condition_date_to=None,
+                             observation_date_from=None, observation_date_to=None):
     """背景執行緒中執行資料生成"""
     global generation_status
     
@@ -197,7 +226,12 @@ def generate_data_background(num_patients, num_conditions, num_observations, num
             generation_status['current_step'] = f'生成第 {i+1}/{num_patients} 個病人...'
             generation_status['progress'] = 10 + (i / num_patients) * 40
             
-            patient_data = generator.generate_complete_patient_data(num_conditions, num_observations, num_medications, num_encounters)
+            patient_data = generator.generate_complete_patient_data(
+                num_conditions, num_observations, num_medications, num_encounters,
+                encounter_date_from=encounter_date_from, encounter_date_to=encounter_date_to,
+                condition_date_from=condition_date_from, condition_date_to=condition_date_to,
+                observation_date_from=observation_date_from, observation_date_to=observation_date_to
+            )
             all_patient_data.append(patient_data)
             time.sleep(0.1)  # 模擬處理時間
         
@@ -397,13 +431,17 @@ def generate_custom():
         selected_medications = data.get('medications', [])
         server_choice = data.get('server_choice', '1')
         custom_server = data.get('custom_server', '')
-        
+
+        # 解析可選的時間範圍參數
+        date_params = _parse_date_params(data.get)
+
         # 生成資料
         generator = TWFHIRGeneratorFixed()
         patient_data = generator.generate_custom_patient_data(
             selected_conditions=selected_conditions,
             selected_observations=selected_observations,
-            selected_medications=selected_medications
+            selected_medications=selected_medications,
+            **date_params
         )
         
         if not patient_data:

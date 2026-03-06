@@ -14,6 +14,9 @@ import time
 from config_loader import ConfigLoader
 
 class TWFHIRGeneratorFixed:
+    # 門診機率較高的就診類型權重列表
+    ENCOUNTER_TYPE_WEIGHTS = ["outpatient", "outpatient", "outpatient", "emergency", "inpatient"]
+
     def __init__(self):
         """
         初始化台灣 FHIR 資料生成器 - 修復版
@@ -225,20 +228,40 @@ class TWFHIRGeneratorFixed:
         
         return patient
 
-    def generate_encounter(self, patient_id, patient_name, encounter_type="outpatient"):
+    @staticmethod
+    def _random_date_in_range(date_from=None, date_to=None, default_days_back=180):
+        """在指定日期範圍內生成隨機日期，若未指定則使用預設天數回推"""
+        if date_from and date_to:
+            delta = (date_to - date_from).days
+            if delta <= 0:
+                return date_from
+            return date_from + timedelta(days=random.randint(0, delta))
+        elif date_from:
+            delta = (datetime.now() - date_from).days
+            if delta <= 0:
+                return date_from
+            return date_from + timedelta(days=random.randint(0, delta))
+        elif date_to:
+            return date_to - timedelta(days=random.randint(0, default_days_back))
+        else:
+            return datetime.now() - timedelta(days=random.randint(1, default_days_back))
+
+    def generate_encounter(self, patient_id, patient_name, encounter_type="outpatient", date_from=None, date_to=None):
         """
         生成就診記錄 (Encounter) 資源
-        
+
         Args:
             patient_id: 病人ID
             patient_name: 病人姓名
             encounter_type: 就診類型 ('outpatient': 門診, 'inpatient': 住院, 'emergency': 急診)
-            
+            date_from: 就診日期範圍起始 (datetime, 可選)
+            date_to: 就診日期範圍結束 (datetime, 可選)
+
         Returns:
             Encounter FHIR 資源
         """
         encounter_id = str(uuid.uuid4())
-        
+
         # 定義就診類型的映射
         encounter_types = {
             "outpatient": {
@@ -257,11 +280,11 @@ class TWFHIRGeneratorFixed:
                 "display_en": "Emergency"
             }
         }
-        
+
         encounter_info = encounter_types.get(encounter_type, encounter_types["outpatient"])
-        
-        # 生成就診時間（過去6個月內的隨機時間）
-        visit_date = datetime.now() - timedelta(days=random.randint(1, 180))
+
+        # 生成就診時間
+        visit_date = self._random_date_in_range(date_from, date_to, default_days_back=180)
         
         # 根據就診類型設定就診時長
         if encounter_type == "outpatient":
@@ -331,76 +354,17 @@ class TWFHIRGeneratorFixed:
         
         return encounter
 
-    def generate_condition(self, patient_id, patient_name):
-        """修復版：为指定病人生成 Condition 資源"""
+    def generate_condition(self, patient_id, patient_name, date_from=None, date_to=None):
+        """隨機選取疾病並生成 Condition 資源"""
         condition_info = random.choice(self.conditions)
-        condition_id = str(uuid.uuid4())
-        
-        # 隨機生成發病日期（過去2年內）
-        onset_date = datetime.now() - timedelta(days=random.randint(1, 730))
-        
-        narrative_text = f"""
-        <div xmlns="http://www.w3.org/1999/xhtml">
-            <p><strong>疾病資訊</strong></p>
-            <ul>
-                <li>病人: {patient_name}</li>
-                <li>疾病: {condition_info['display']}</li>
-                <li>發病日期: {onset_date.strftime('%Y-%m-%d')}</li>
-                <li>狀態: 活躍</li>
-            </ul>
-        </div>
-        """.strip()
-        
-        condition = {
-            "resourceType": "Condition",
-            "id": condition_id,
-            "text": {
-                "status": "generated",
-                "div": narrative_text
-            },
-            "clinicalStatus": {
-                "coding": [
-                    {
-                        "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                        "code": "active",
-                        "display": "Active"
-                    }
-                ]
-            },
-            "verificationStatus": {
-                "coding": [
-                    {
-                        "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
-                        "code": "confirmed",
-                        "display": "Confirmed"
-                    }
-                ]
-            },
-            "code": {
-                "coding": [
-                    {
-                        "system": condition_info["system"],
-                        "code": condition_info["code"],
-                        "display": condition_info["display"]
-                    }
-                ],
-                "text": condition_info["display"]
-            },
-            "subject": {
-                "reference": f"Patient/{patient_id}"
-            },
-            "onsetDateTime": onset_date.strftime("%Y-%m-%d"),
-            "recordedDate": datetime.now().strftime("%Y-%m-%d")
-        }
-        
-        return condition
+        return self.generate_condition_with_info(patient_id, patient_name, condition_info, date_from, date_to)
 
-    def generate_condition_with_info(self, patient_id, patient_name, condition_info):
+    def generate_condition_with_info(self, patient_id, patient_name, condition_info, date_from=None, date_to=None):
         """使用指定的疾病資訊生成 Condition 資源"""
         condition_id = str(uuid.uuid4())
-        
-        # 隨機生成發病日期（過去2年內）
-        onset_date = datetime.now() - timedelta(days=random.randint(1, 730))
+
+        # 生成發病日期
+        onset_date = self._random_date_in_range(date_from, date_to, default_days_back=730)
         
         narrative_text = f"""
         <div xmlns="http://www.w3.org/1999/xhtml">
@@ -458,84 +422,26 @@ class TWFHIRGeneratorFixed:
         
         return condition
 
-    def generate_observation(self, patient_id, patient_name):
-        """修復版：为指定病人生成 Observation 資源"""
+    def generate_observation(self, patient_id, patient_name, date_from=None, date_to=None):
+        """隨機選取觀察項目並生成 Observation 資源"""
         obs_info = random.choice(self.observations)
-        observation_id = str(uuid.uuid4())
-        
-        # 生成隨機值
-        if isinstance(obs_info["min_val"], float) or isinstance(obs_info["max_val"], float):
-            # 如果是浮點數，使用 uniform 並保留適當小數位
-            if obs_info["code"] == "8310-5":  # 體溫
-                value = round(random.uniform(obs_info["min_val"], obs_info["max_val"]), 1)
-            else:
-                value = round(random.uniform(obs_info["min_val"], obs_info["max_val"]), 2)
-        else:
-            value = random.randint(obs_info["min_val"], obs_info["max_val"])
-        
-        # 隨機生成觀察日期（過去30天內）
-        observation_date = datetime.now() - timedelta(days=random.randint(1, 30))
-        
-        narrative_text = f"""
-        <div xmlns="http://www.w3.org/1999/xhtml">
-            <p><strong>觀察記錄</strong></p>
-            <ul>
-                <li>病人: {patient_name}</li>
-                <li>項目: {obs_info['display']}</li>
-                <li>數值: {value} {obs_info['unit']}</li>
-                <li>觀察日期: {observation_date.strftime('%Y-%m-%d')}</li>
-            </ul>
-        </div>
-        """.strip()
-        
-        observation = {
-            "resourceType": "Observation",
-            "id": observation_id,
-            "text": {
-                "status": "generated",
-                "div": narrative_text
-            },
-            "status": "final",
-            "code": {
-                "coding": [
-                    {
-                        "system": "http://loinc.org",
-                        "code": obs_info["code"],
-                        "display": obs_info["display"]
-                    }
-                ],
-                "text": obs_info["display"]
-            },
-            "subject": {
-                "reference": f"Patient/{patient_id}"
-            },
-            "effectiveDateTime": observation_date.strftime("%Y-%m-%d"),
-            "valueQuantity": {
-                "value": value,
-                "unit": obs_info["unit"],
-                "system": "http://unitsofmeasure.org",
-                "code": obs_info["ucum_code"]  # 使用正确的 UCUM 代碼
-            }
-        }
-        
-        return observation
+        return self.generate_observation_with_info(patient_id, patient_name, obs_info, date_from, date_to)
 
-    def generate_observation_with_info(self, patient_id, patient_name, obs_info):
+    def generate_observation_with_info(self, patient_id, patient_name, obs_info, date_from=None, date_to=None):
         """使用指定的觀察信息生成 Observation 資源"""
         observation_id = str(uuid.uuid4())
-        
+
         # 生成隨機值
         if isinstance(obs_info["min_val"], float) or isinstance(obs_info["max_val"], float):
-            # 如果是浮點數，使用 uniform 並保留適當小數位
             if obs_info["code"] == "8310-5":  # 體溫
                 value = round(random.uniform(obs_info["min_val"], obs_info["max_val"]), 1)
             else:
                 value = round(random.uniform(obs_info["min_val"], obs_info["max_val"]), 2)
         else:
             value = random.randint(obs_info["min_val"], obs_info["max_val"])
-        
-        # 隨機生成觀察日期（過去30天內）
-        observation_date = datetime.now() - timedelta(days=random.randint(1, 30))
+
+        # 生成觀察日期
+        observation_date = self._random_date_in_range(date_from, date_to, default_days_back=30)
         
         narrative_text = f"""
         <div xmlns="http://www.w3.org/1999/xhtml">
@@ -582,54 +488,9 @@ class TWFHIRGeneratorFixed:
         return observation
 
     def generate_medication(self, patient_id, patient_name):
-        """生成 Medication 資源"""
+        """隨機選取藥物並生成 Medication 資源"""
         med_info = random.choice(self.medications)
-        medication_id = str(uuid.uuid4())
-        
-        narrative_text = f"""
-        <div xmlns="http://www.w3.org/1999/xhtml">
-            <p><strong>藥物資訊</strong></p>
-            <ul>
-                <li>藥物名稱: {med_info['display']}</li>
-                <li>類別: {med_info['category']}</li>
-                <li>劑型: {med_info['dosage_form']}</li>
-                <li>強度: {med_info['strength']}</li>
-                <li>ATC代碼: {med_info['atc']}</li>
-            </ul>
-        </div>
-        """.strip()
-        
-        medication = {
-            "resourceType": "Medication",
-            "id": medication_id,
-            "text": {
-                "status": "generated",
-                "div": narrative_text
-            },
-            "code": {
-                "coding": [
-                    {
-                        "system": med_info["system"],
-                        "code": med_info["code"],
-                        "display": med_info["display"]
-                    }
-                ],
-                "text": med_info["display"]
-            },
-            "status": "active",
-            "form": {
-                "coding": [
-                    {
-                        "system": "http://snomed.info/sct",
-                        "code": self._get_dosage_form_code(med_info["dosage_form"]),
-                        "display": self._get_dosage_form_display(med_info["dosage_form"])
-                    }
-                ],
-                "text": self._get_dosage_form_display(med_info["dosage_form"])
-            }
-        }
-        
-        return medication
+        return self.generate_medication_with_info(patient_id, patient_name, med_info)
 
     def generate_medication_with_info(self, patient_id, patient_name, med_info):
         """使用指定的藥物資訊生成 Medication 資源"""
@@ -793,46 +654,57 @@ class TWFHIRGeneratorFixed:
         unit = re.sub(r'\d+(?:\.\d+)?', '', strength).strip()
         return unit if unit else "mg"
 
-    def generate_complete_patient_data(self, num_conditions=2, num_observations=3, num_medications=2, num_encounters=1):
-        """生成一個完整的病人資料（包含 Patient、Encounter、Condition、Observation、Medication、MedicationRequest）- 確保不重复"""
+    def generate_complete_patient_data(self, num_conditions=2, num_observations=3, num_medications=2, num_encounters=1,
+                                       encounter_date_from=None, encounter_date_to=None,
+                                       condition_date_from=None, condition_date_to=None,
+                                       observation_date_from=None, observation_date_to=None):
+        """
+        生成一個完整的病人資料（包含 Patient、Encounter、Condition、Observation、Medication、MedicationRequest）- 確保不重复
+
+        可選時間綁定參數（datetime 或 None）：
+            encounter_date_from / encounter_date_to: 就診記錄日期範圍
+            condition_date_from / condition_date_to: 疾病發病日期範圍
+            observation_date_from / observation_date_to: 觀察記錄日期範圍
+        """
         # 生成 Patient
         patient = self.generate_patient()
         patient_id = patient["id"]
         patient_name = patient["name"][0]["text"]
-        
+
         # 生成 Encounters (就診記錄)
         encounters = []
         if num_encounters > 0:
-            encounter_types = ["outpatient", "outpatient", "outpatient", "emergency", "inpatient"]  # 門診機率較高
+            encounter_types = self.ENCOUNTER_TYPE_WEIGHTS
             for _ in range(num_encounters):
                 encounter_type = random.choice(encounter_types)
-                encounter = self.generate_encounter(patient_id, patient_name, encounter_type)
+                encounter = self.generate_encounter(patient_id, patient_name, encounter_type,
+                                                    date_from=encounter_date_from, date_to=encounter_date_to)
                 encounters.append(encounter)
-        
+
         # 生成不重複的 Conditions
         conditions = []
         if num_conditions > 0:
             if num_conditions > len(self.conditions):
                 print(f"⚠️  警告：要求生成 {num_conditions} 個疾病，但只有 {len(self.conditions)} 種疾病類型，將生成全部")
                 num_conditions = len(self.conditions)
-            
-            # 隨機選擇不重複的疾病類型
+
             selected_conditions = random.sample(self.conditions, num_conditions)
             for condition_info in selected_conditions:
-                condition = self.generate_condition_with_info(patient_id, patient_name, condition_info)
+                condition = self.generate_condition_with_info(patient_id, patient_name, condition_info,
+                                                             date_from=condition_date_from, date_to=condition_date_to)
                 conditions.append(condition)
-        
+
         # 生成不重複的 Observations
         observations = []
         if num_observations > 0:
             if num_observations > len(self.observations):
                 print(f"⚠️  警告：要求生成 {num_observations} 個觀察，但只有 {len(self.observations)} 種觀察类型，將生成全部")
                 num_observations = len(self.observations)
-            
-            # 隨機選擇不重複的觀察类型
+
             selected_observations = random.sample(self.observations, num_observations)
             for obs_info in selected_observations:
-                observation = self.generate_observation_with_info(patient_id, patient_name, obs_info)
+                observation = self.generate_observation_with_info(patient_id, patient_name, obs_info,
+                                                                 date_from=observation_date_from, date_to=observation_date_to)
                 observations.append(observation)
         
         # 生成不重複的 Medications 和 MedicationRequests
@@ -864,16 +736,22 @@ class TWFHIRGeneratorFixed:
             "medication_requests": medication_requests
         }
 
-    def generate_custom_patient_data(self, selected_conditions=None, selected_observations=None, selected_medications=None, num_encounters=1):
+    def generate_custom_patient_data(self, selected_conditions=None, selected_observations=None, selected_medications=None, num_encounters=1,
+                                      encounter_date_from=None, encounter_date_to=None,
+                                      condition_date_from=None, condition_date_to=None,
+                                      observation_date_from=None, observation_date_to=None):
         """
         生成自定義的單一病人資料
-        
+
         Args:
             selected_conditions: 指定的疾病列表 (可以是索引或疾病代碼)
             selected_observations: 指定的觀察項目列表 (可以是索引或觀察代碼)
             selected_medications: 指定的藥物列表 (可以是索引或藥物代碼)
             num_encounters: 要生成的就診記錄數量 (預設1)
-            
+            encounter_date_from / encounter_date_to: 就診記錄日期範圍 (datetime, 可選)
+            condition_date_from / condition_date_to: 疾病發病日期範圍 (datetime, 可選)
+            observation_date_from / observation_date_to: 觀察記錄日期範圍 (datetime, 可選)
+
         Returns:
             完整的病人資料字典
         """
@@ -885,52 +763,53 @@ class TWFHIRGeneratorFixed:
         # 生成 Encounters (就診記錄)
         encounters = []
         if num_encounters > 0:
-            encounter_types = ["outpatient", "outpatient", "outpatient", "emergency", "inpatient"]  # 門診機率較高
+            encounter_types = self.ENCOUNTER_TYPE_WEIGHTS  # 門診機率較高
             for _ in range(num_encounters):
                 encounter_type = random.choice(encounter_types)
-                encounter = self.generate_encounter(patient_id, patient_name, encounter_type)
+                encounter = self.generate_encounter(patient_id, patient_name, encounter_type,
+                                                    date_from=encounter_date_from, date_to=encounter_date_to)
                 encounters.append(encounter)
-        
+
         # 處理指定的 Conditions
         conditions = []
         if selected_conditions:
             for item in selected_conditions:
                 if isinstance(item, int):
-                    # 如果是索引
                     if 0 <= item < len(self.conditions):
                         condition_info = self.conditions[item]
-                        condition = self.generate_condition_with_info(patient_id, patient_name, condition_info)
+                        condition = self.generate_condition_with_info(patient_id, patient_name, condition_info,
+                                                                     date_from=condition_date_from, date_to=condition_date_to)
                         conditions.append(condition)
                 elif isinstance(item, str):
-                    # 如果是代碼，查找對應的疾病
                     condition_info = self._find_condition_by_code(item)
                     if condition_info:
-                        condition = self.generate_condition_with_info(patient_id, patient_name, condition_info)
+                        condition = self.generate_condition_with_info(patient_id, patient_name, condition_info,
+                                                                     date_from=condition_date_from, date_to=condition_date_to)
                         conditions.append(condition)
                 elif isinstance(item, dict):
-                    # 如果直接提供疾病資訊
-                    condition = self.generate_condition_with_info(patient_id, patient_name, item)
+                    condition = self.generate_condition_with_info(patient_id, patient_name, item,
+                                                                 date_from=condition_date_from, date_to=condition_date_to)
                     conditions.append(condition)
-        
+
         # 處理指定的 Observations
         observations = []
         if selected_observations:
             for item in selected_observations:
                 if isinstance(item, int):
-                    # 如果是索引
                     if 0 <= item < len(self.observations):
                         obs_info = self.observations[item]
-                        observation = self.generate_observation_with_info(patient_id, patient_name, obs_info)
+                        observation = self.generate_observation_with_info(patient_id, patient_name, obs_info,
+                                                                         date_from=observation_date_from, date_to=observation_date_to)
                         observations.append(observation)
                 elif isinstance(item, str):
-                    # 如果是代碼，查找對應的觀察項目
                     obs_info = self._find_observation_by_code(item)
                     if obs_info:
-                        observation = self.generate_observation_with_info(patient_id, patient_name, obs_info)
+                        observation = self.generate_observation_with_info(patient_id, patient_name, obs_info,
+                                                                         date_from=observation_date_from, date_to=observation_date_to)
                         observations.append(observation)
                 elif isinstance(item, dict):
-                    # 如果直接提供觀察資訊
-                    observation = self.generate_observation_with_info(patient_id, patient_name, item)
+                    observation = self.generate_observation_with_info(patient_id, patient_name, item,
+                                                                     date_from=observation_date_from, date_to=observation_date_to)
                     observations.append(observation)
         
         # 處理指定的 Medications 和 MedicationRequests
