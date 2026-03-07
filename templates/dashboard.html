@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>資料統計儀表板 - Taiwan FHIR Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -14,140 +15,218 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8;
             min-height: 100vh;
-            padding: 20px;
+            color: #334155;
         }
 
-        .container {
+        /* Top Navigation Bar */
+        .top-nav {
+            background: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+            padding: 0 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .top-nav-inner {
             max-width: 1400px;
             margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
         }
 
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
+        .top-nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: #1e3a5f;
+            font-weight: 700;
+            font-size: 1.15rem;
         }
 
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
+        .top-nav-brand i {
+            color: #0d9488;
+            font-size: 1.3rem;
         }
 
         .nav-buttons {
             display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-bottom: 30px;
+            gap: 10px;
+            align-items: center;
             flex-wrap: wrap;
         }
 
         .nav-btn {
-            background: white;
-            color: #667eea;
-            padding: 12px 24px;
+            background: #ffffff;
+            color: #0d9488;
+            padding: 8px 20px;
             border-radius: 8px;
             text-decoration: none;
             font-weight: 600;
-            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             gap: 8px;
+            border: 1.5px solid #0d9488;
         }
 
         .nav-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            background: #0d9488;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(13, 148, 136, 0.25);
         }
 
+        .refresh-btn {
+            background: #0d9488;
+            color: #ffffff;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .refresh-btn:hover {
+            background: #0f766e;
+            box-shadow: 0 2px 8px rgba(13, 148, 136, 0.3);
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 28px 24px;
+        }
+
+        /* Page Header */
+        .header {
+            margin-bottom: 28px;
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin-bottom: 4px;
+        }
+
+        .header h1 i {
+            color: #0d9488;
+            margin-right: 6px;
+        }
+
+        .header p {
+            font-size: 0.95rem;
+            color: #64748b;
+            font-weight: 400;
+        }
+
+        /* Stats Grid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+            margin-bottom: 28px;
         }
 
         .stat-card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 22px 24px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         .stat-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .stat-card .icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            color: #667eea;
+            font-size: 2rem;
+            margin-bottom: 12px;
+            color: #0d9488;
         }
 
         .stat-card .number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 5px;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin-bottom: 4px;
+            line-height: 1.1;
         }
 
         .stat-card .label {
-            font-size: 1rem;
-            color: #666;
+            font-size: 0.9rem;
+            color: #64748b;
+            font-weight: 500;
         }
 
+        /* Chart Section */
         .chart-section {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 30px;
-            margin-bottom: 30px;
+            gap: 20px;
+            margin-bottom: 28px;
         }
 
         .chart-card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .chart-card h3 {
-            color: #333;
-            margin-bottom: 20px;
+            color: #1e3a5f;
+            margin-bottom: 18px;
             display: flex;
             align-items: center;
             gap: 10px;
+            font-size: 1.05rem;
+            font-weight: 600;
         }
 
         .chart-card h3 i {
-            color: #667eea;
+            color: #0d9488;
         }
 
+        /* Recent Files */
         .recent-files {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .recent-files h3 {
-            color: #333;
-            margin-bottom: 20px;
+            color: #1e3a5f;
+            margin-bottom: 18px;
             display: flex;
             align-items: center;
             gap: 10px;
+            font-size: 1.05rem;
+            font-weight: 600;
         }
 
         .recent-files h3 i {
-            color: #667eea;
+            color: #0d9488;
         }
 
         .file-list {
@@ -155,16 +234,17 @@
         }
 
         .file-item {
-            padding: 15px;
-            border-bottom: 1px solid #e1e5e9;
+            padding: 14px 16px;
+            border-bottom: 1px solid #e2e8f0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.2s ease;
+            border-radius: 6px;
         }
 
         .file-item:hover {
-            background-color: #f8f9fa;
+            background-color: #f0fdfa;
         }
 
         .file-item:last-child {
@@ -177,34 +257,44 @@
 
         .file-name {
             font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
+            color: #1e3a5f;
+            margin-bottom: 4px;
+            font-size: 0.95rem;
         }
 
         .file-meta {
-            font-size: 0.9rem;
-            color: #666;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .file-meta i {
+            color: #94a3b8;
         }
 
         .file-badge {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 5px 12px;
+            background: #0d9488;
+            color: #ffffff;
+            padding: 5px 14px;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             font-weight: 600;
+            white-space: nowrap;
         }
 
+        /* Loading */
         .loading {
             text-align: center;
-            padding: 40px;
-            color: white;
-            font-size: 1.2rem;
+            padding: 60px 20px;
+            color: #64748b;
+            font-size: 1.1rem;
         }
 
         .loading i {
-            font-size: 3rem;
-            animation: spin 2s linear infinite;
+            font-size: 2.5rem;
+            color: #0d9488;
+            animation: spin 1.5s linear infinite;
+            display: block;
+            margin-bottom: 16px;
         }
 
         @keyframes spin {
@@ -212,55 +302,58 @@
             100% { transform: rotate(360deg); }
         }
 
-        .refresh-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin: 20px auto;
-        }
-
-        .refresh-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
+        /* Responsive */
         @media (max-width: 768px) {
             .stats-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .chart-section {
                 grid-template-columns: 1fr;
+            }
+
+            .top-nav-inner {
+                height: auto;
+                padding: 12px 0;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .nav-buttons {
+                justify-content: center;
+            }
+
+            .container {
+                padding: 20px 16px;
             }
         }
     </style>
 </head>
 <body>
+    <nav class="top-nav">
+        <div class="top-nav-inner">
+            <a href="/" class="top-nav-brand">
+                <i class="fas fa-heartbeat"></i>
+                Taiwan FHIR Generator
+            </a>
+            <div class="nav-buttons">
+                <a href="/" class="nav-btn">
+                    <i class="fas fa-home"></i> 批量生成
+                </a>
+                <a href="/custom" class="nav-btn">
+                    <i class="fas fa-user-edit"></i> 自定義生成
+                </a>
+                <button class="refresh-btn" onclick="loadStatistics()">
+                    <i class="fas fa-sync-alt"></i> 重新整理
+                </button>
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
         <div class="header">
             <h1><i class="fas fa-chart-line"></i> 資料統計儀表板</h1>
             <p>Taiwan FHIR Data Generator Statistics</p>
-        </div>
-
-        <div class="nav-buttons">
-            <a href="/" class="nav-btn">
-                <i class="fas fa-home"></i> 批量生成
-            </a>
-            <a href="/custom" class="nav-btn">
-                <i class="fas fa-user-edit"></i> 自定義生成
-            </a>
-            <button class="refresh-btn" onclick="loadStatistics()">
-                <i class="fas fa-sync-alt"></i> 重新整理
-            </button>
         </div>
 
         <div id="loading" class="loading">
@@ -391,11 +484,11 @@
                             data.total_medication_requests
                         ],
                         backgroundColor: [
-                            '#667eea',
-                            '#764ba2',
-                            '#f093fb',
-                            '#4facfe',
-                            '#43e97b'
+                            '#0d9488',
+                            '#0891b2',
+                            '#14b8a6',
+                            '#2dd4bf',
+                            '#06b6d4'
                         ]
                     }]
                 },
@@ -428,8 +521,8 @@
                             data.total_medications,
                             data.total_medication_requests
                         ],
-                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
-                        borderColor: 'rgba(102, 126, 234, 1)',
+                        backgroundColor: 'rgba(13, 148, 136, 0.8)',
+                        borderColor: 'rgba(13, 148, 136, 1)',
                         borderWidth: 1
                     }]
                 },
@@ -451,7 +544,7 @@
 
         function updateRecentFiles(files) {
             const fileList = document.getElementById('recentFiles');
-            
+
             if (files.length === 0) {
                 fileList.innerHTML = `
                     <li class="file-item">
@@ -469,7 +562,7 @@
                     <div class="file-info">
                         <div class="file-name">${file.filename}</div>
                         <div class="file-meta">
-                            <i class="fas fa-calendar-alt"></i> ${file.timestamp} | 
+                            <i class="fas fa-calendar-alt"></i> ${file.timestamp} |
                             <i class="fas fa-file-archive"></i> ${file.size}
                         </div>
                     </div>
@@ -486,4 +579,3 @@
     </script>
 </body>
 </html>
-

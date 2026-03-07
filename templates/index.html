@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>台灣 FHIR 病人資料生成器</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
@@ -13,39 +14,110 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8;
             min-height: 100vh;
-            padding: 20px;
+            color: #334155;
         }
 
+        /* Top Navigation Bar */
+        .top-nav {
+            background: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: #1e3a5f;
+            font-weight: 700;
+            font-size: 1.15rem;
+        }
+
+        .nav-logo i {
+            color: #0d9488;
+            font-size: 1.4rem;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-links a {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #475569;
+            background: #f0f4f8;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            background: #0d9488;
+            color: #ffffff;
+            border-color: #0d9488;
+        }
+
+        .nav-links a i {
+            font-size: 0.85rem;
+        }
+
+        /* Page Content */
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 32px 20px;
         }
 
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
+        /* Page Header */
+        .page-header {
+            margin-bottom: 32px;
         }
 
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        .page-header h1 {
+            font-size: 1.85rem;
+            font-weight: 700;
+            color: #1e3a5f;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
+        .page-header h1 i {
+            color: #0d9488;
         }
 
+        .page-header p {
+            margin-top: 6px;
+            font-size: 1rem;
+            color: #64748b;
+            font-weight: 400;
+        }
+
+        /* Main Content Grid */
         .main-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
+            gap: 24px;
+            margin-bottom: 24px;
         }
 
         @media (max-width: 768px) {
@@ -54,236 +126,388 @@
             }
         }
 
+        /* Cards */
         .card {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 28px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.2s ease;
         }
 
         .card:hover {
-            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
 
         .card h2 {
-            color: #333;
+            color: #1e3a5f;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
             gap: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
         }
 
         .card h2 i {
-            color: #667eea;
+            color: #0d9488;
         }
 
+        /* Form Styles */
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #555;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #475569;
+            font-size: 0.9rem;
         }
 
         .form-group input,
         .form-group select {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e1e5e9;
+            padding: 10px 14px;
+            border: 1px solid #d1d5db;
             border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            color: #334155;
+            background: #ffffff;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #0d9488;
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
         }
 
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 14px;
         }
 
+        /* Buttons */
         .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: #0d9488;
+            color: #ffffff;
             border: none;
-            padding: 15px 30px;
+            padding: 12px 24px;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
+            font-family: 'Inter', sans-serif;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             width: 100%;
         }
 
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            background: #0f766e;
+            box-shadow: 0 2px 8px rgba(13, 148, 136, 0.3);
         }
 
         .btn:disabled {
-            opacity: 0.6;
+            opacity: 0.55;
             cursor: not-allowed;
-            transform: none;
+            box-shadow: none;
         }
 
+        /* Info Card */
         .info-card {
-            background: #f8f9fa;
-            border-left: 4px solid #667eea;
-            padding: 20px;
+            background: #f8fafb;
+            border-left: 4px solid #0d9488;
+            padding: 18px;
             border-radius: 8px;
             margin-bottom: 20px;
         }
 
         .info-card h3 {
-            color: #333;
+            color: #1e3a5f;
             margin-bottom: 10px;
+            font-size: 1rem;
+            font-weight: 600;
         }
 
         .info-card p {
-            color: #666;
+            color: #64748b;
             line-height: 1.6;
+            font-size: 0.9rem;
         }
 
+        /* Stats Grid */
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 12px;
             margin-top: 20px;
         }
 
         .stat-item {
             text-align: center;
-            padding: 15px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 14px 8px;
+            background: #f0f4f8;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
         }
 
         .stat-item .number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #667eea;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #0d9488;
         }
 
         .stat-item .label {
-            font-size: 0.9rem;
-            color: #666;
-            margin-top: 5px;
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 4px;
+            font-weight: 500;
         }
 
+        /* Progress */
         .progress-container {
             display: none;
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            margin-top: 30px;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 28px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-top: 24px;
+        }
+
+        .progress-container h2 {
+            color: #1e3a5f;
+            margin-bottom: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
         }
 
         .progress-bar {
             width: 100%;
-            height: 20px;
-            background: #e1e5e9;
-            border-radius: 10px;
+            height: 12px;
+            background: #e2e8f0;
+            border-radius: 6px;
             overflow: hidden;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
+            background: #0d9488;
             width: 0%;
             transition: width 0.3s ease;
-            border-radius: 10px;
+            border-radius: 6px;
         }
 
         .progress-text {
             text-align: center;
-            color: #666;
+            color: #64748b;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        /* Results */
+        .results-container {
+            display: none;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 28px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-top: 24px;
+        }
+
+        .results-container h2 {
+            color: #1e3a5f;
+            margin-bottom: 16px;
+            font-size: 1.1rem;
             font-weight: 600;
         }
 
-        .results-container {
-            display: none;
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            margin-top: 30px;
-        }
-
+        /* Messages */
         .success-message {
-            background: #d4edda;
-            color: #155724;
-            padding: 15px;
+            background: #ecfdf5;
+            color: #065f46;
+            padding: 14px 18px;
             border-radius: 8px;
             margin-bottom: 20px;
-            border: 1px solid #c3e6cb;
+            border: 1px solid #a7f3d0;
+            font-weight: 500;
         }
 
         .error-message {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 15px;
+            background: #fef2f2;
+            color: #991b1b;
+            padding: 14px 18px;
             border-radius: 8px;
             margin-bottom: 20px;
-            border: 1px solid #f5c6cb;
+            border: 1px solid #fecaca;
+            font-weight: 500;
         }
 
+        /* Download Button */
         .download-btn {
-            background: #28a745;
-            margin-top: 15px;
+            background: #059669;
+            margin-top: 16px;
         }
 
         .download-btn:hover {
-            background: #218838;
+            background: #047857;
         }
 
+        /* Server Config */
         .server-config {
             display: none;
-            margin-top: 15px;
+            margin-top: 14px;
         }
 
         .server-config.show {
             display: block;
         }
 
+        /* Feature List */
         .feature-list {
             list-style: none;
             padding: 0;
         }
 
         .feature-list li {
-            padding: 8px 0;
+            padding: 7px 0;
             display: flex;
             align-items: center;
             gap: 10px;
+            font-size: 0.9rem;
+            color: #475569;
         }
 
         .feature-list li i {
-            color: #28a745;
-            width: 20px;
+            color: #0d9488;
+            width: 18px;
+            font-size: 0.85rem;
         }
 
+        /* Scenario Preset Section */
+        .scenario-section {
+            background: #f8fafb;
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .scenario-section label.section-label {
+            font-size: 0.95rem;
+            color: #0d9488;
+            margin-bottom: 10px;
+            display: block;
+            font-weight: 600;
+        }
+
+        .scenario-section select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #0d9488;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            margin-bottom: 8px;
+            color: #334155;
+            background: #ffffff;
+        }
+
+        .scenario-section select:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
+        }
+
+        .scenario-hint {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin: 0;
+        }
+
+        /* Date Range Section */
+        .date-section {
+            background: #f8fafb;
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .date-section label.section-label {
+            font-size: 0.95rem;
+            color: #0d9488;
+            margin-bottom: 8px;
+            display: block;
+            font-weight: 600;
+        }
+
+        .date-section .date-hint {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-bottom: 12px;
+        }
+
+        .date-section .form-group {
+            margin-bottom: 0;
+        }
+
+        .date-section .form-group label {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .date-section .form-row {
+            margin-bottom: 10px;
+        }
+
+        .date-section .form-row:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Custom Link Button */
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-3 {
+            margin-top: 14px;
+        }
+
+        .btn-outline-primary {
+            background: transparent;
+            color: #0d9488;
+            border: 1px solid #0d9488;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+        }
+
+        .btn-outline-primary:hover {
+            background: #0d9488;
+            color: #ffffff;
+        }
+
+        .me-2 {
+            margin-right: 6px;
+        }
+
+        /* Loading Spinner */
         .loading-spinner {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             border-top-color: #fff;
             animation: spin 1s ease-in-out infinite;
@@ -295,40 +519,48 @@
     </style>
 </head>
 <body>
+    <!-- Top Navigation Bar -->
+    <nav class="top-nav">
+        <a href="/" class="nav-logo">
+            <i class="fas fa-heartbeat"></i>
+            <span>TW FHIR 資料生成器</span>
+        </a>
+        <div class="nav-links">
+            <a href="/dashboard">
+                <i class="fas fa-chart-line"></i> 統計儀表板
+            </a>
+            <a href="/custom">
+                <i class="fas fa-user-edit"></i> 自定義生成
+            </a>
+        </div>
+    </nav>
+
     <div class="container">
-        <div class="header">
-            <h1><i class="fas fa-hospital"></i> 台灣 FHIR 病人資料生成器</h1>
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1><i class="fas fa-plus-square"></i> 台灣 FHIR 病人資料生成器</h1>
             <p>快速生成符合台灣醫療標準的 FHIR 病人資料</p>
-            
-            <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
-                <a href="/dashboard" style="background: rgba(255,255,255,0.2); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                    <i class="fas fa-chart-line"></i> 統計儀表板
-                </a>
-                <a href="/custom" style="background: rgba(255,255,255,0.2); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                    <i class="fas fa-user-edit"></i> 自定義生成
-                </a>
-            </div>
         </div>
 
         <div class="main-content">
             <!-- 設定表單 -->
             <div class="card">
                 <h2><i class="fas fa-cogs"></i> 生成設定</h2>
-                
+
                 <form id="generateForm">
                     <!-- 情境預設選擇 -->
-                    <div class="form-group" style="background: linear-gradient(135deg, #f6f8fb 0%, #e9ecef 100%); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                        <label style="font-size: 1.1rem; color: #667eea; margin-bottom: 10px; display: block;">
+                    <div class="scenario-section">
+                        <label class="section-label">
                             <i class="fas fa-magic"></i> 情境預設模式
                         </label>
-                        <select id="scenario_select" style="width: 100%; padding: 12px; border: 2px solid #667eea; border-radius: 8px; font-size: 16px; margin-bottom: 10px;">
+                        <select id="scenario_select">
                             <option value="">自訂設定（不使用預設）</option>
                         </select>
-                        <p style="font-size: 0.9rem; color: #666; margin: 0;">
+                        <p class="scenario-hint">
                             <i class="fas fa-info-circle"></i> 選擇常見醫療情境，自動填入相關參數
                         </p>
                     </div>
-                    
+
                     <div class="form-row">
                         <div class="form-group">
                             <label for="num_patients">病人數量</label>
@@ -339,7 +571,7 @@
                             <input type="number" id="num_conditions" name="num_conditions" value="2" min="0" max="20" required>
                         </div>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="num_observations">每人觀察記錄數 (可設為0)</label>
                         <input type="number" id="num_observations" name="num_observations" value="3" min="0" max="50" required>
@@ -362,49 +594,49 @@
                     </div>
 
                     <!-- 時間範圍設定 -->
-                    <div class="form-group" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                        <label style="font-size: 1rem; color: #667eea; margin-bottom: 10px; display: block;">
+                    <div class="date-section">
+                        <label class="section-label">
                             <i class="fas fa-calendar-alt"></i> 時間範圍設定（選填）
                         </label>
-                        <p style="font-size: 0.85rem; color: #888; margin-bottom: 12px;">留空則自動使用隨機日期</p>
+                        <p class="date-hint">留空則自動使用隨機日期</p>
 
-                        <div class="form-row" style="margin-bottom: 10px;">
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label for="encounter_date_from" style="font-size: 0.85rem;">就診日期起始</label>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="encounter_date_from">就診日期起始</label>
                                 <input type="date" id="encounter_date_from" name="encounter_date_from">
                             </div>
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label for="encounter_date_to" style="font-size: 0.85rem;">就診日期結束</label>
+                            <div class="form-group">
+                                <label for="encounter_date_to">就診日期結束</label>
                                 <input type="date" id="encounter_date_to" name="encounter_date_to">
                             </div>
                         </div>
-                        <div class="form-row" style="margin-bottom: 10px;">
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label for="condition_date_from" style="font-size: 0.85rem;">疾病發病日期起始</label>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="condition_date_from">疾病發病日期起始</label>
                                 <input type="date" id="condition_date_from" name="condition_date_from">
                             </div>
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label for="condition_date_to" style="font-size: 0.85rem;">疾病發病日期結束</label>
+                            <div class="form-group">
+                                <label for="condition_date_to">疾病發病日期結束</label>
                                 <input type="date" id="condition_date_to" name="condition_date_to">
                             </div>
                         </div>
                         <div class="form-row">
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label for="observation_date_from" style="font-size: 0.85rem;">觀察記錄日期起始</label>
+                            <div class="form-group">
+                                <label for="observation_date_from">觀察記錄日期起始</label>
                                 <input type="date" id="observation_date_from" name="observation_date_from">
                             </div>
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label for="observation_date_to" style="font-size: 0.85rem;">觀察記錄日期結束</label>
+                            <div class="form-group">
+                                <label for="observation_date_to">觀察記錄日期結束</label>
                                 <input type="date" id="observation_date_to" name="observation_date_to">
                             </div>
                         </div>
-                        <div class="form-row" style="margin-top: 10px;">
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label for="allergy_date_from" style="font-size: 0.85rem;">過敏記錄日期起始</label>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="allergy_date_from">過敏記錄日期起始</label>
                                 <input type="date" id="allergy_date_from" name="allergy_date_from">
                             </div>
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label for="allergy_date_to" style="font-size: 0.85rem;">過敏記錄日期結束</label>
+                            <div class="form-group">
+                                <label for="allergy_date_to">過敏記錄日期結束</label>
                                 <input type="date" id="allergy_date_to" name="allergy_date_to">
                             </div>
                         </div>
@@ -432,7 +664,7 @@
                         <i class="fas fa-play"></i>
                         開始生成
                     </button>
-                    
+
                     <div class="text-center mt-3">
                         <a href="/custom" class="btn btn-outline-primary">
                             <i class="fas fa-user-md me-2"></i>自定義單一病人生成
@@ -444,7 +676,7 @@
             <!-- 系統資訊 -->
             <div class="card">
                 <h2><i class="fas fa-info-circle"></i> 系統資訊</h2>
-                
+
                 <div class="info-card">
                     <h3>功能特色</h3>
                     <ul class="feature-list">
@@ -501,14 +733,14 @@
 
     <script>
         let scenariosData = [];
-        
+
         // 載入情境預設
         fetch('/api/scenarios')
             .then(response => response.json())
             .then(data => {
                 scenariosData = data.scenarios || [];
                 const select = document.getElementById('scenario_select');
-                
+
                 scenariosData.forEach(scenario => {
                     const option = document.createElement('option');
                     option.value = scenario.id;
@@ -517,12 +749,12 @@
                 });
             })
             .catch(error => console.error('載入情境失敗:', error));
-        
+
         // 情境選擇變更處理
         document.getElementById('scenario_select').addEventListener('change', function() {
             const scenarioId = this.value;
             if (!scenarioId) return;
-            
+
             const scenario = scenariosData.find(s => s.id === scenarioId);
             if (scenario) {
                 // 自動填入推薦數值
@@ -540,7 +772,7 @@
                       `👨‍⚕️ 就診記錄: ${scenario.num_encounters} 次`);
             }
         });
-        
+
         // 載入系統資訊
         fetch('/api/info')
             .then(response => response.json())
@@ -565,20 +797,20 @@
         // 表單提交處理
         document.getElementById('generateForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             const formData = new FormData(this);
             const generateBtn = document.getElementById('generateBtn');
             const progressContainer = document.getElementById('progressContainer');
             const resultsContainer = document.getElementById('resultsContainer');
-            
+
             // 重置顯示
             resultsContainer.style.display = 'none';
             progressContainer.style.display = 'block';
-            
+
             // 禁用按鈕
             generateBtn.disabled = true;
             generateBtn.innerHTML = '<div class="loading-spinner"></div> 生成中...';
-            
+
             // 提交表單
             fetch('/generate', {
                 method: 'POST',
@@ -589,7 +821,7 @@
                 if (data.error) {
                     throw new Error(data.error);
                 }
-                
+
                 // 開始輪詢狀態
                 pollStatus();
             })
@@ -605,7 +837,7 @@
                 .then(response => response.json())
                 .then(data => {
                     updateProgress(data.progress, data.current_step);
-                    
+
                     if (data.error) {
                         showError(data.error);
                         resetForm();
@@ -634,14 +866,14 @@
             const progressContainer = document.getElementById('progressContainer');
             const resultsContainer = document.getElementById('resultsContainer');
             const resultsContent = document.getElementById('resultsContent');
-            
+
             progressContainer.style.display = 'none';
             resultsContainer.style.display = 'block';
-            
+
             let html = '<div class="success-message">';
             html += '<i class="fas fa-check-circle"></i> 資料生成成功！';
             html += '</div>';
-            
+
             html += '<div class="stats">';
             html += `<div class="stat-item"><div class="number">${results.num_patients}</div><div class="label">病人</div></div>`;
             html += `<div class="stat-item"><div class="number">${results.num_encounters || 0}</div><div class="label">就診記錄</div></div>`;
@@ -651,7 +883,7 @@
             html += `<div class="stat-item"><div class="number">${results.num_medication_requests}</div><div class="label">處方</div></div>`;
             html += `<div class="stat-item"><div class="number">${results.num_allergies || 0}</div><div class="label">過敏</div></div>`;
             html += '</div>';
-            
+
             if (results.upload) {
                 html += '<div class="info-card" style="margin-top: 20px;">';
                 html += '<h3><i class="fas fa-cloud-upload-alt"></i> 上傳結果</h3>';
@@ -668,13 +900,13 @@
                 }
                 html += '</div>';
             }
-            
+
             // 下載按鈕
             const filename = results.filename.split('/').pop();
             html += `<button class="btn download-btn" onclick="downloadFile('${filename}')">`;
             html += '<i class="fas fa-download"></i> 下載生成的檔案';
             html += '</button>';
-            
+
             resultsContent.innerHTML = html;
         }
 
@@ -683,10 +915,10 @@
             const progressContainer = document.getElementById('progressContainer');
             const resultsContainer = document.getElementById('resultsContainer');
             const resultsContent = document.getElementById('resultsContent');
-            
+
             progressContainer.style.display = 'none';
             resultsContainer.style.display = 'block';
-            
+
             resultsContent.innerHTML = `
                 <div class="error-message">
                     <i class="fas fa-exclamation-triangle"></i> ${message}
