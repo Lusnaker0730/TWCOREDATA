@@ -23,6 +23,7 @@ class ConfigLoader:
         self.conditions = []
         self.observations = []
         self.medications = []
+        self.allergies = []
         
         # 載入所有配置檔案
         self.load_all_configs()
@@ -108,7 +109,26 @@ class ConfigLoader:
                 medications.append(medication_with_category)
         
         return medications
-    
+
+    def load_allergies_config(self) -> List[Dict[str, Any]]:
+        """
+        載入過敏配置
+
+        Returns:
+            過敏列表
+        """
+        config = self.load_json_config("allergies.json")
+        allergies = []
+
+        for category_key, category_data in config["categories"].items():
+            for allergy in category_data["allergies"]:
+                allergy_with_category = allergy.copy()
+                allergy_with_category["category"] = category_data["name"]
+                allergy_with_category["category_key"] = category_key
+                allergies.append(allergy_with_category)
+
+        return allergies
+
     def load_all_configs(self):
         """載入所有配置檔案"""
         try:
@@ -125,7 +145,11 @@ class ConfigLoader:
             # 載入藥物配置
             self.medications = self.load_medications_config()
             print(f"   ✅ 載入 {len(self.medications)} 種藥物")
-            
+
+            # 載入過敏配置
+            self.allergies = self.load_allergies_config()
+            print(f"   ✅ 載入 {len(self.allergies)} 種過敏項目")
+
             print("📋 配置檔案載入完成")
             
         except Exception as e:
@@ -143,7 +167,11 @@ class ConfigLoader:
     def get_medications(self) -> List[Dict[str, Any]]:
         """獲取藥物列表"""
         return self.medications
-    
+
+    def get_allergies(self) -> List[Dict[str, Any]]:
+        """獲取過敏列表"""
+        return self.allergies
+
     def get_conditions_by_category(self, category_key: str) -> List[Dict[str, Any]]:
         """
         根據類別獲取疾病列表
@@ -179,7 +207,19 @@ class ConfigLoader:
             該類別的藥物列表
         """
         return [m for m in self.medications if m.get("category_key") == category_key]
-    
+
+    def get_allergies_by_category(self, category_key: str) -> List[Dict[str, Any]]:
+        """
+        根據類別獲取過敏列表
+
+        Args:
+            category_key: 類別鍵值
+
+        Returns:
+            該類別的過敏列表
+        """
+        return [a for a in self.allergies if a.get("category_key") == category_key]
+
     def get_config_info(self) -> Dict[str, Any]:
         """
         獲取配置資訊摘要
@@ -191,10 +231,12 @@ class ConfigLoader:
             "conditions_count": len(self.conditions),
             "observations_count": len(self.observations),
             "medications_count": len(self.medications),
+            "allergies_count": len(self.allergies),
             "config_directory": str(self.config_dir),
             "available_condition_categories": list(set(c.get("category_key") for c in self.conditions)),
             "available_observation_categories": list(set(o.get("category_key") for o in self.observations)),
-            "available_medication_categories": list(set(m.get("category_key") for m in self.medications))
+            "available_medication_categories": list(set(m.get("category_key") for m in self.medications)),
+            "available_allergy_categories": list(set(a.get("category_key") for a in self.allergies))
         }
     
     def reload_configs(self):
@@ -221,7 +263,10 @@ def test_config_loader():
         
         cardiovascular_meds = loader.get_medications_by_category("cardiovascular")
         print(f"   心血管藥物: {len(cardiovascular_meds)} 種")
-        
+
+        drug_allergies = loader.get_allergies_by_category("drug_allergy")
+        print(f"   藥物過敏: {len(drug_allergies)} 種")
+
         print("\n✅ 配置載入器測試完成")
         
     except Exception as e:

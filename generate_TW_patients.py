@@ -9,6 +9,7 @@ import requests
 import uuid
 import random
 from datetime import datetime, timedelta
+from html import escape as html_escape
 from pathlib import Path
 import time
 from config_loader import ConfigLoader
@@ -26,7 +27,8 @@ class TWFHIRGeneratorFixed:
         self.conditions = self.config_loader.get_conditions()
         self.observations = self.config_loader.get_observations()
         self.medications = self.config_loader.get_medications()
-        
+        self.allergies = self.config_loader.get_allergies()
+
         # 台灣常見姓氏和名字
         self.surnames = [
             "陳", "林", "黃", "張", "李", "王", "吳", "劉", "蔡", "楊",
@@ -654,17 +656,131 @@ class TWFHIRGeneratorFixed:
         unit = re.sub(r'\d+(?:\.\d+)?', '', strength).strip()
         return unit if unit else "mg"
 
-    def generate_complete_patient_data(self, num_conditions=2, num_observations=3, num_medications=2, num_encounters=1,
+    def generate_allergy(self, patient_id, patient_name, date_from=None, date_to=None):
+        """隨機選取過敏項目並生成 AllergyIntolerance 資源"""
+        allergy_info = random.choice(self.allergies)
+        return self.generate_allergy_with_info(patient_id, patient_name, allergy_info, date_from, date_to)
+
+    def generate_allergy_with_info(self, patient_id, patient_name, allergy_info, date_from=None, date_to=None):
+        """使用指定的過敏資訊生成 AllergyIntolerance 資源"""
+        allergy_id = str(uuid.uuid4())
+
+        # 生成記錄日期
+        recorded_date = self._random_date_in_range(date_from, date_to, default_days_back=730)
+
+        # 過敏類型映射
+        allergy_type_map = {
+            "medication": {"code": "medication", "display": "Medication"},
+            "food": {"code": "food", "display": "Food"},
+            "environment": {"code": "environment", "display": "Environment"},
+        }
+        allergy_type = allergy_type_map.get(allergy_info.get("type", "medication"), allergy_type_map["medication"])
+
+        # 過敏反應類型
+        reaction_manifestations = [
+            {"code": "39579001", "display": "Anaphylaxis"},
+            {"code": "271807003", "display": "Eruption of skin"},
+            {"code": "267036007", "display": "Dyspnea"},
+            {"code": "247472004", "display": "Urticaria"},
+            {"code": "878820003", "display": "Rhinitis"},
+            {"code": "422587007", "display": "Nausea"},
+            {"code": "404640003", "display": "Dizziness"},
+            {"code": "418290006", "display": "Itching"},
+        ]
+        manifestation = random.choice(reaction_manifestations)
+
+        # 嚴重程度
+        severity_options = ["mild", "moderate", "severe"]
+        severity = random.choice(severity_options)
+
+        narrative_text = f"""
+        <div xmlns="http://www.w3.org/1999/xhtml">
+            <p><strong>過敏資訊</strong></p>
+            <ul>
+                <li>病人: {html_escape(patient_name)}</li>
+                <li>過敏原: {html_escape(allergy_info['display'])}</li>
+                <li>類型: {html_escape(allergy_type['display'])}</li>
+                <li>嚴重程度: {html_escape(severity)}</li>
+                <li>記錄日期: {recorded_date.strftime('%Y-%m-%d')}</li>
+            </ul>
+        </div>
+        """.strip()
+
+        allergy = {
+            "resourceType": "AllergyIntolerance",
+            "id": allergy_id,
+            "text": {
+                "status": "generated",
+                "div": narrative_text
+            },
+            "clinicalStatus": {
+                "coding": [
+                    {
+                        "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical",
+                        "code": "active",
+                        "display": "Active"
+                    }
+                ]
+            },
+            "verificationStatus": {
+                "coding": [
+                    {
+                        "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-verification",
+                        "code": "confirmed",
+                        "display": "Confirmed"
+                    }
+                ]
+            },
+            "type": "allergy",
+            "category": [allergy_type["code"]],
+            "criticality": allergy_info.get("criticality", "low"),
+            "code": {
+                "coding": [
+                    {
+                        "system": allergy_info["system"],
+                        "code": allergy_info["code"],
+                        "display": allergy_info["display"]
+                    }
+                ],
+                "text": allergy_info["display"]
+            },
+            "patient": {
+                "reference": f"Patient/{patient_id}"
+            },
+            "recordedDate": recorded_date.strftime("%Y-%m-%d"),
+            "reaction": [
+                {
+                    "manifestation": [
+                        {
+                            "coding": [
+                                {
+                                    "system": "http://snomed.info/sct",
+                                    "code": manifestation["code"],
+                                    "display": manifestation["display"]
+                                }
+                            ]
+                        }
+                    ],
+                    "severity": severity
+                }
+            ]
+        }
+
+        return allergy
+
+    def generate_complete_patient_data(self, num_conditions=2, num_observations=3, num_medications=2, num_allergies=1, num_encounters=1,
                                        encounter_date_from=None, encounter_date_to=None,
                                        condition_date_from=None, condition_date_to=None,
-                                       observation_date_from=None, observation_date_to=None):
+                                       observation_date_from=None, observation_date_to=None,
+                                       allergy_date_from=None, allergy_date_to=None):
         """
-        生成一個完整的病人資料（包含 Patient、Encounter、Condition、Observation、Medication、MedicationRequest）- 確保不重复
+        生成一個完整的病人資料（包含 Patient、Encounter、Condition、Observation、Medication、MedicationRequest、AllergyIntolerance）- 確保不重复
 
         可選時間綁定參數（datetime 或 None）：
             encounter_date_from / encounter_date_to: 就診記錄日期範圍
             condition_date_from / condition_date_to: 疾病發病日期範圍
             observation_date_from / observation_date_to: 觀察記錄日期範圍
+            allergy_date_from / allergy_date_to: 過敏記錄日期範圍
         """
         # 生成 Patient
         patient = self.generate_patient()
@@ -726,20 +842,35 @@ class TWFHIRGeneratorFixed:
                     patient_id, patient_name, medication["id"], medication["code"]["text"]
                 )
                 medication_requests.append(medication_request)
-        
+
+        # 生成不重複的 Allergies
+        allergies = []
+        if num_allergies > 0:
+            if num_allergies > len(self.allergies):
+                print(f"⚠️  警告：要求生成 {num_allergies} 個過敏，但只有 {len(self.allergies)} 種過敏類型，將生成全部")
+                num_allergies = len(self.allergies)
+
+            selected_allergies = random.sample(self.allergies, num_allergies)
+            for allergy_info in selected_allergies:
+                allergy = self.generate_allergy_with_info(patient_id, patient_name, allergy_info,
+                                                          date_from=allergy_date_from, date_to=allergy_date_to)
+                allergies.append(allergy)
+
         return {
             "patient": patient,
             "encounters": encounters,
             "conditions": conditions,
             "observations": observations,
             "medications": medications,
-            "medication_requests": medication_requests
+            "medication_requests": medication_requests,
+            "allergies": allergies
         }
 
-    def generate_custom_patient_data(self, selected_conditions=None, selected_observations=None, selected_medications=None, num_encounters=1,
+    def generate_custom_patient_data(self, selected_conditions=None, selected_observations=None, selected_medications=None, selected_allergies=None, num_encounters=1,
                                       encounter_date_from=None, encounter_date_to=None,
                                       condition_date_from=None, condition_date_to=None,
-                                      observation_date_from=None, observation_date_to=None):
+                                      observation_date_from=None, observation_date_to=None,
+                                      allergy_date_from=None, allergy_date_to=None):
         """
         生成自定義的單一病人資料
 
@@ -747,10 +878,12 @@ class TWFHIRGeneratorFixed:
             selected_conditions: 指定的疾病列表 (可以是索引或疾病代碼)
             selected_observations: 指定的觀察項目列表 (可以是索引或觀察代碼)
             selected_medications: 指定的藥物列表 (可以是索引或藥物代碼)
+            selected_allergies: 指定的過敏項目列表 (可以是索引或過敏代碼)
             num_encounters: 要生成的就診記錄數量 (預設1)
             encounter_date_from / encounter_date_to: 就診記錄日期範圍 (datetime, 可選)
             condition_date_from / condition_date_to: 疾病發病日期範圍 (datetime, 可選)
             observation_date_from / observation_date_to: 觀察記錄日期範圍 (datetime, 可選)
+            allergy_date_from / allergy_date_to: 過敏記錄日期範圍 (datetime, 可選)
 
         Returns:
             完整的病人資料字典
@@ -832,20 +965,37 @@ class TWFHIRGeneratorFixed:
                 if med_info:
                     medication = self.generate_medication_with_info(patient_id, patient_name, med_info)
                     medications.append(medication)
-                    
+
                     # 為每個藥物生成對應的處方
                     medication_request = self.generate_medication_request(
                         patient_id, patient_name, medication["id"], medication["code"]["text"]
                     )
                     medication_requests.append(medication_request)
-        
+
+        # 處理指定的 Allergies
+        allergies = []
+        if selected_allergies:
+            for item in selected_allergies:
+                allergy_info = None
+                if isinstance(item, int):
+                    if 0 <= item < len(self.allergies):
+                        allergy_info = self.allergies[item]
+                elif isinstance(item, str):
+                    allergy_info = self._find_allergy_by_code(item)
+
+                if allergy_info:
+                    allergy = self.generate_allergy_with_info(patient_id, patient_name, allergy_info,
+                                                              date_from=allergy_date_from, date_to=allergy_date_to)
+                    allergies.append(allergy)
+
         return {
             "patient": patient,
             "encounters": encounters,
             "conditions": conditions,
             "observations": observations,
             "medications": medications,
-            "medication_requests": medication_requests
+            "medication_requests": medication_requests,
+            "allergies": allergies
         }
 
     def _find_condition_by_code(self, code):
@@ -867,6 +1017,13 @@ class TWFHIRGeneratorFixed:
         for medication in self.medications:
             if medication.get("code") == code:
                 return medication
+        return None
+
+    def _find_allergy_by_code(self, code):
+        """根據代碼查找過敏項目"""
+        for allergy in self.allergies:
+            if allergy.get("code") == code:
+                return allergy
         return None
 
     def list_available_conditions(self, category=None, limit=None):
@@ -966,16 +1123,41 @@ class TWFHIRGeneratorFixed:
         
         return result
 
+    def list_available_allergies(self, category=None, limit=None):
+        """列出可用的過敏項目"""
+        allergies = self.allergies
+
+        if category:
+            allergies = [a for a in allergies if a.get("category_key") == category or a.get("category") == category]
+
+        if limit:
+            allergies = allergies[:limit]
+
+        result = []
+        for i, allergy in enumerate(allergies):
+            result.append({
+                "index": i,
+                "code": allergy.get("code"),
+                "display": allergy.get("display"),
+                "category": allergy.get("category", "未分類"),
+                "type": allergy.get("type"),
+                "criticality": allergy.get("criticality")
+            })
+
+        return result
+
     def get_categories(self):
         """獲取所有可用的類別"""
         condition_categories = list(set(c.get("category", "未分類") for c in self.conditions))
         observation_categories = list(set(o.get("category", "未分類") for o in self.observations))
         medication_categories = list(set(m.get("category", "未分類") for m in self.medications))
-        
+        allergy_categories = list(set(a.get("category", "未分類") for a in self.allergies))
+
         return {
             "conditions": sorted(condition_categories),
             "observations": sorted(observation_categories),
-            "medications": sorted(medication_categories)
+            "medications": sorted(medication_categories),
+            "allergies": sorted(allergy_categories)
         }
 
     def search_items(self, query, item_type="all"):
@@ -984,17 +1166,17 @@ class TWFHIRGeneratorFixed:
         
         Args:
             query: 搜尋關鍵字
-            item_type: 項目類型 ("conditions", "observations", "medications", "all")
-            
+            item_type: 項目類型 ("conditions", "observations", "medications", "allergies", "all")
+
         Returns:
             搜尋結果
         """
         query = query.lower()
-        results = {"conditions": [], "observations": [], "medications": []}
-        
+        results = {"conditions": [], "observations": [], "medications": [], "allergies": []}
+
         if item_type in ["conditions", "all"]:
             for i, condition in enumerate(self.conditions):
-                if (query in condition.get("display", "").lower() or 
+                if (query in condition.get("display", "").lower() or
                     query in condition.get("code", "").lower() or
                     query in condition.get("category", "").lower()):
                     results["conditions"].append({
@@ -1003,10 +1185,10 @@ class TWFHIRGeneratorFixed:
                         "display": condition.get("display"),
                         "category": condition.get("category", "未分類")
                     })
-        
+
         if item_type in ["observations", "all"]:
             for i, observation in enumerate(self.observations):
-                if (query in observation.get("display", "").lower() or 
+                if (query in observation.get("display", "").lower() or
                     query in observation.get("code", "").lower() or
                     query in observation.get("category", "").lower()):
                     results["observations"].append({
@@ -1016,10 +1198,10 @@ class TWFHIRGeneratorFixed:
                         "category": observation.get("category", "未分類"),
                         "unit": observation.get("unit")
                     })
-        
+
         if item_type in ["medications", "all"]:
             for i, medication in enumerate(self.medications):
-                if (query in medication.get("display", "").lower() or 
+                if (query in medication.get("display", "").lower() or
                     query in medication.get("code", "").lower() or
                     query in medication.get("category", "").lower()):
                     results["medications"].append({
@@ -1029,7 +1211,21 @@ class TWFHIRGeneratorFixed:
                         "category": medication.get("category", "未分類"),
                         "strength": medication.get("strength")
                     })
-        
+
+        if item_type in ["allergies", "all"]:
+            for i, allergy in enumerate(self.allergies):
+                if (query in allergy.get("display", "").lower() or
+                    query in allergy.get("code", "").lower() or
+                    query in allergy.get("category", "").lower()):
+                    results["allergies"].append({
+                        "index": i,
+                        "code": allergy.get("code"),
+                        "display": allergy.get("display"),
+                        "category": allergy.get("category", "未分類"),
+                        "type": allergy.get("type"),
+                        "criticality": allergy.get("criticality")
+                    })
+
         return results
 
     def upload_resource_to_server(self, resource, server_url):
@@ -1064,6 +1260,7 @@ class TWFHIRGeneratorFixed:
             "observations": [],
             "medications": [],
             "medication_requests": [],
+            "allergies": [],
             "errors": []
         }
         
@@ -1108,7 +1305,23 @@ class TWFHIRGeneratorFixed:
                     print(f"   ❌ Condition 上傳失敗: {result}")
                 
                 time.sleep(0.5)  # 避免过于频繁的请求
-            
+
+            # 上傳 Allergies
+            if 'allergies' in patient_data:
+                for i, allergy in enumerate(patient_data['allergies']):
+                    allergy['patient']['reference'] = f"Patient/{new_patient_id}"
+                    print(f"📤 上傳 AllergyIntolerance {i+1}: {allergy['code']['text']}")
+
+                    success, result = self.upload_resource_to_server(allergy, server_url)
+                    if success:
+                        results["allergies"].append(result)
+                        print(f"   ✅ AllergyIntolerance 上傳成功，ID: {result}")
+                    else:
+                        results["errors"].append(f"AllergyIntolerance {i+1}: {result}")
+                        print(f"   ❌ AllergyIntolerance 上傳失敗: {result}")
+
+                    time.sleep(0.5)
+
             # 上傳 Observations
             for i, observation in enumerate(patient_data['observations']):
                 observation['subject']['reference'] = f"Patient/{new_patient_id}"

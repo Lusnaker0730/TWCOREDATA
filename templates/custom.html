@@ -288,7 +288,7 @@
                                     <div class="card-body">
                                         <div class="row">
                                             <!-- 疾病總結 -->
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <div class="summary-section">
                                                     <h6 class="text-danger">
                                                         <i class="fas fa-stethoscope me-2"></i>疾病診斷
@@ -301,7 +301,7 @@
                                             </div>
                                             
                                             <!-- 觀察項目總結 -->
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <div class="summary-section">
                                                     <h6 class="text-success">
                                                         <i class="fas fa-microscope me-2"></i>觀察項目
@@ -314,7 +314,7 @@
                                             </div>
                                             
                                             <!-- 藥物總結 -->
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <div class="summary-section">
                                                     <h6 class="text-info">
                                                         <i class="fas fa-pills me-2"></i>藥物處方
@@ -322,6 +322,19 @@
                                                     </h6>
                                                     <div id="medicationSummary" class="summary-items">
                                                         <p class="text-muted small mb-0">尚未選擇任何藥物</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- 過敏總結 -->
+                                            <div class="col-md-3">
+                                                <div class="summary-section">
+                                                    <h6 class="text-warning">
+                                                        <i class="fas fa-allergies me-2"></i>過敏記錄
+                                                        <span class="badge bg-warning ms-2" id="allergyCount">0</span>
+                                                    </h6>
+                                                    <div id="allergySummary" class="summary-items">
+                                                        <p class="text-muted small mb-0">尚未選擇任何過敏項目</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -336,7 +349,7 @@
                                                             <i class="fas fa-calendar-alt me-1"></i> 時間範圍設定（選填，留空則隨機）
                                                         </p>
                                                         <div class="row g-2">
-                                                            <div class="col-md-4">
+                                                            <div class="col-md-3">
                                                                 <label class="form-label" style="font-size: 0.8rem;">就診日期</label>
                                                                 <div class="d-flex gap-1">
                                                                     <input type="date" class="form-control form-control-sm" id="encounter_date_from" placeholder="起始">
@@ -344,7 +357,7 @@
                                                                     <input type="date" class="form-control form-control-sm" id="encounter_date_to" placeholder="結束">
                                                                 </div>
                                                             </div>
-                                                            <div class="col-md-4">
+                                                            <div class="col-md-3">
                                                                 <label class="form-label" style="font-size: 0.8rem;">疾病發病日期</label>
                                                                 <div class="d-flex gap-1">
                                                                     <input type="date" class="form-control form-control-sm" id="condition_date_from" placeholder="起始">
@@ -352,12 +365,20 @@
                                                                     <input type="date" class="form-control form-control-sm" id="condition_date_to" placeholder="結束">
                                                                 </div>
                                                             </div>
-                                                            <div class="col-md-4">
+                                                            <div class="col-md-3">
                                                                 <label class="form-label" style="font-size: 0.8rem;">觀察記錄日期</label>
                                                                 <div class="d-flex gap-1">
                                                                     <input type="date" class="form-control form-control-sm" id="observation_date_from" placeholder="起始">
                                                                     <span class="align-self-center">~</span>
                                                                     <input type="date" class="form-control form-control-sm" id="observation_date_to" placeholder="結束">
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <label class="form-label" style="font-size: 0.8rem;">過敏記錄日期</label>
+                                                                <div class="d-flex gap-1">
+                                                                    <input type="date" class="form-control form-control-sm" id="allergy_date_from" placeholder="起始">
+                                                                    <span class="align-self-center">~</span>
+                                                                    <input type="date" class="form-control form-control-sm" id="allergy_date_to" placeholder="結束">
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -414,6 +435,11 @@
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="medications-tab" data-bs-toggle="tab" data-bs-target="#medications" type="button" role="tab">
                                     <i class="fas fa-pills me-2"></i>藥物處方
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="allergies-tab" data-bs-toggle="tab" data-bs-target="#allergies" type="button" role="tab">
+                                    <i class="fas fa-allergies me-2"></i>過敏記錄
                                 </button>
                             </li>
                         </ul>
@@ -476,16 +502,40 @@
                                             <i class="fas fa-search"></i>
                                             <input type="text" class="form-control" id="medicationSearch" placeholder="輸入藥物名稱或代碼...">
                                         </div>
-                                        
+
                                         <div class="mb-3">
                                             <label for="medicationCategory" class="form-label">類別篩選</label>
                                             <select class="form-select" id="medicationCategory">
                                                 <option value="">所有類別</option>
                                             </select>
                                         </div>
-                                        
+
                                         <div id="medicationList" class="selection-list">
                                             <!-- 藥物列表將在這裡動態載入 -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 過敏選擇 -->
+                            <div class="tab-pane fade" id="allergies" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h5><i class="fas fa-search me-2"></i>搜尋過敏項目</h5>
+                                        <div class="search-box">
+                                            <i class="fas fa-search"></i>
+                                            <input type="text" class="form-control" id="allergySearch" placeholder="輸入過敏項目名稱或代碼...">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="allergyCategory" class="form-label">類別篩選</label>
+                                            <select class="form-select" id="allergyCategory">
+                                                <option value="">所有類別</option>
+                                            </select>
+                                        </div>
+
+                                        <div id="allergyList" class="selection-list">
+                                            <!-- 過敏列表將在這裡動態載入 -->
                                         </div>
                                     </div>
                                 </div>
@@ -523,9 +573,11 @@
         let selectedConditions = [];
         let selectedObservations = [];
         let selectedMedications = [];
+        let selectedAllergies = [];
         let allConditions = [];
         let allObservations = [];
         let allMedications = [];
+        let allAllergies = [];
         let categories = {};
 
         // 初始化
@@ -545,6 +597,7 @@
                 populateSelect('conditionCategory', categories.conditions);
                 populateSelect('observationCategory', categories.observations);
                 populateSelect('medicationCategory', categories.medications);
+                if (categories.allergies) populateSelect('allergyCategory', categories.allergies);
             } catch (error) {
                 console.error('載入類別失敗:', error);
             }
@@ -633,6 +686,28 @@
             }
         }
 
+        async function loadAllergies(category = '', search = '') {
+            try {
+                let url = '/api/allergies?limit=50';
+                if (category) url += `&category=${encodeURIComponent(category)}`;
+
+                const response = await fetch(url);
+                allAllergies = await response.json();
+
+                let filteredAllergies = allAllergies;
+                if (search) {
+                    filteredAllergies = allAllergies.filter(item =>
+                        item.display.toLowerCase().includes(search.toLowerCase()) ||
+                        item.code.toLowerCase().includes(search.toLowerCase())
+                    );
+                }
+
+                displayItems('allergyList', filteredAllergies, 'allergy');
+            } catch (error) {
+                console.error('載入過敏項目失敗:', error);
+            }
+        }
+
         // 顯示項目列表
         function displayItems(containerId, items, type) {
             const container = document.getElementById(containerId);
@@ -654,6 +729,8 @@
                     extraInfo = `<small class="text-muted">單位: ${item.unit || 'N/A'}</small>`;
                 } else if (type === 'medication') {
                     extraInfo = `<small class="text-muted">劑量: ${item.strength || 'N/A'}</small>`;
+                } else if (type === 'allergy') {
+                    extraInfo = `<small class="text-muted">嚴重度: ${item.criticality || 'N/A'} | 類型: ${item.type || 'N/A'}</small>`;
                 }
                 
                 card.innerHTML = `
@@ -690,8 +767,12 @@
                 item = allMedications.find(m => m.index === index);
                 selectedArray = selectedMedications;
                 displayId = 'selectedMedications';
+            } else if (type === 'allergy') {
+                item = allAllergies.find(a => a.index === index);
+                selectedArray = selectedAllergies;
+                displayId = 'selectedAllergies';
             }
-            
+
             // 檢查是否已經選擇
             if (selectedArray.some(selected => selected.index === index)) {
                 alert('此項目已經選擇過了');
@@ -718,8 +799,12 @@
                 selectedArray = selectedMedications;
                 displayId = 'selectedMedications';
                 selectedMedications = selectedMedications.filter(item => item.index !== index);
+            } else if (type === 'allergy') {
+                selectedArray = selectedAllergies;
+                displayId = 'selectedAllergies';
+                selectedAllergies = selectedAllergies.filter(item => item.index !== index);
             }
-            
+
             updateSelectedDisplay(displayId, selectedArray, type);
         }
 
@@ -739,6 +824,9 @@
             
             // 更新藥物總結
             updateSummarySection('medicationSummary', 'medicationCount', selectedMedications, 'medication', '藥物');
+
+            // 更新過敏總結
+            updateSummarySection('allergySummary', 'allergyCount', selectedAllergies, 'allergy', '過敏項目');
         }
         
         // 更新特定類型的總結區域
@@ -771,7 +859,8 @@
             const names = {
                 'condition': '疾病',
                 'observation': '觀察項目',
-                'medication': '藥物'
+                'medication': '藥物',
+                'allergy': '過敏項目'
             };
             return names[type] || '項目';
         }
@@ -809,7 +898,17 @@
                 const search = document.getElementById('medicationSearch').value;
                 loadMedications(e.target.value, search);
             });
-            
+
+            document.getElementById('allergySearch').addEventListener('input', function(e) {
+                const category = document.getElementById('allergyCategory').value;
+                loadAllergies(category, e.target.value);
+            });
+
+            document.getElementById('allergyCategory').addEventListener('change', function(e) {
+                const search = document.getElementById('allergySearch').value;
+                loadAllergies(e.target.value, search);
+            });
+
             // 選項卡切換時載入資料
             document.getElementById('observations-tab').addEventListener('shown.bs.tab', function() {
                 if (allObservations.length === 0) {
@@ -822,7 +921,13 @@
                     loadMedications();
                 }
             });
-            
+
+            document.getElementById('allergies-tab').addEventListener('shown.bs.tab', function() {
+                if (allAllergies.length === 0) {
+                    loadAllergies();
+                }
+            });
+
             // 頂部上傳選項
             document.getElementById('uploadToServerTop').addEventListener('change', function(e) {
                 document.getElementById('serverOptionsTop').style.display = e.target.checked ? 'block' : 'none';
@@ -839,8 +944,8 @@
         // 生成自定義病人資料
         async function generateCustomPatient() {
             // 檢查是否至少選擇了一個項目
-            if (selectedConditions.length === 0 && selectedObservations.length === 0 && selectedMedications.length === 0) {
-                alert('請至少選擇一個疾病、觀察項目或藥物');
+            if (selectedConditions.length === 0 && selectedObservations.length === 0 && selectedMedications.length === 0 && selectedAllergies.length === 0) {
+                alert('請至少選擇一個疾病、觀察項目、藥物或過敏項目');
                 return;
             }
             
@@ -856,6 +961,7 @@
                     conditions: selectedConditions.map(item => item.index),
                     observations: selectedObservations.map(item => item.index),
                     medications: selectedMedications.map(item => item.index),
+                    allergies: selectedAllergies.map(item => item.index),
                     upload: document.getElementById('uploadToServerTop').checked,
                     server_choice: document.getElementById('serverChoiceTop').value,
                     custom_server: document.getElementById('customServerTop').value,
@@ -865,6 +971,8 @@
                     condition_date_to: document.getElementById('condition_date_to').value || null,
                     observation_date_from: document.getElementById('observation_date_from').value || null,
                     observation_date_to: document.getElementById('observation_date_to').value || null,
+                    allergy_date_from: document.getElementById('allergy_date_from').value || null,
+                    allergy_date_to: document.getElementById('allergy_date_to').value || null,
                 };
                 
                 const response = await fetch('/generate_custom', {
@@ -930,7 +1038,8 @@
                                         <span class="badge bg-danger me-1">${result.upload.uploaded_conditions}</span> 疾病 |
                                         <span class="badge bg-success me-1">${result.upload.uploaded_observations}</span> 觀察 |
                                         <span class="badge bg-info me-1">${result.upload.uploaded_medications}</span> 藥物 |
-                                        <span class="badge bg-warning">${result.upload.uploaded_medication_requests}</span> 處方
+                                        <span class="badge bg-warning">${result.upload.uploaded_medication_requests}</span> 處方 |
+                                        <span class="badge bg-warning text-dark">${result.upload.uploaded_allergies || 0}</span> 過敏
                                     </p>
                                     ${result.upload.errors.length > 0 ? `<p class="mb-0 text-warning"><small>錯誤: ${result.upload.errors.length} 個</small></p>` : ''}
                                 </div>
@@ -960,7 +1069,8 @@
                                 <span class="badge bg-danger me-1">${result.stats.conditions}</span> 疾病 |
                                 <span class="badge bg-success me-1">${result.stats.observations}</span> 觀察 |
                                 <span class="badge bg-info me-1">${result.stats.medications}</span> 藥物 |
-                                <span class="badge bg-warning">${result.stats.medication_requests}</span> 處方
+                                <span class="badge bg-warning">${result.stats.medication_requests}</span> 處方 |
+                                <span class="badge bg-warning text-dark me-1">${result.stats.allergies || 0}</span> 過敏
                             </p>
                         </div>
                     </div>
@@ -1008,7 +1118,8 @@
             selectedConditions = [];
             selectedObservations = [];
             selectedMedications = [];
-            
+            selectedAllergies = [];
+
             // 更新顯示
             updateSummaryDisplay();
             
@@ -1035,7 +1146,8 @@
                                 疾病: ${result.upload.uploaded_conditions} 個 | 
                                 觀察: ${result.upload.uploaded_observations} 個 | 
                                 藥物: ${result.upload.uploaded_medications} 個 | 
-                                處方: ${result.upload.uploaded_medication_requests} 個
+                                處方: ${result.upload.uploaded_medication_requests} 個 |
+                                過敏: ${result.upload.uploaded_allergies || 0} 個
                             </p>
                             ${result.upload.errors.length > 0 ? `<p class="mb-0 text-warning">錯誤: ${result.upload.errors.length} 個</p>` : ''}
                         </div>
@@ -1061,7 +1173,8 @@
                                 疾病: ${result.stats.conditions} 個 | 
                                 觀察: ${result.stats.observations} 個 | 
                                 藥物: ${result.stats.medications} 個 | 
-                                處方: ${result.stats.medication_requests} 個
+                                處方: ${result.stats.medication_requests} 個 |
+                                過敏: ${result.stats.allergies || 0} 個
                             </p>
                         </div>
                         

@@ -35,6 +35,8 @@ def _parse_date_params(getter):
         'condition_date_to': _parse_date(getter('condition_date_to')),
         'observation_date_from': _parse_date(getter('observation_date_from')),
         'observation_date_to': _parse_date(getter('observation_date_to')),
+        'allergy_date_from': _parse_date(getter('allergy_date_from')),
+        'allergy_date_to': _parse_date(getter('allergy_date_to')),
     }
 
 # 全域變數來追蹤生成狀態
@@ -83,6 +85,7 @@ def get_statistics():
             'total_files': 0,
             'total_patients': 0,
             'total_encounters': 0,
+            'total_allergies': 0,
             'total_conditions': 0,
             'total_observations': 0,
             'total_medications': 0,
@@ -106,11 +109,12 @@ def get_statistics():
                         for patient_data in data:
                             stats['total_patients'] += 1
                             stats['total_encounters'] += len(patient_data.get('encounters', []))
+                            stats['total_allergies'] += len(patient_data.get('allergies', []))
                             stats['total_conditions'] += len(patient_data.get('conditions', []))
                             stats['total_observations'] += len(patient_data.get('observations', []))
                             stats['total_medications'] += len(patient_data.get('medications', []))
                             stats['total_medication_requests'] += len(patient_data.get('medication_requests', []))
-                        
+
                         # 記錄最近的生成
                         file_stat = json_file.stat()
                         stats['recent_generations'].append({
@@ -137,6 +141,7 @@ def get_statistics():
                         if isinstance(data, dict):
                             stats['total_patients'] += 1
                             stats['total_encounters'] += len(data.get('encounters', []))
+                            stats['total_allergies'] += len(data.get('allergies', []))
                             stats['total_conditions'] += len(data.get('conditions', []))
                             stats['total_observations'] += len(data.get('observations', []))
                             stats['total_medications'] += len(data.get('medications', []))
@@ -164,6 +169,7 @@ def generate_data():
         num_observations = int(request.form.get('num_observations', 3))
         num_medications = int(request.form.get('num_medications', 2))
         num_encounters = int(request.form.get('num_encounters', 1))  # 新增就診記錄數量
+        num_allergies = int(request.form.get('num_allergies', 1))
         server_choice = request.form.get('server_choice', 'none')
         custom_server = request.form.get('custom_server', '')
 
@@ -181,6 +187,8 @@ def generate_data():
             return jsonify({'error': '藥物數量必須在 0-20 之間'}), 400
         if num_encounters < 0 or num_encounters > 10:
             return jsonify({'error': '就診記錄數量必須在 0-10 之間'}), 400
+        if num_allergies < 0 or num_allergies > 20:
+            return jsonify({'error': '過敏數量必須在 0-20 之間'}), 400
         
         # 重置狀態
         generation_status = {
@@ -194,7 +202,7 @@ def generate_data():
         # 在背景執行緒中執行生成任務
         thread = threading.Thread(
             target=generate_data_background,
-            args=(num_patients, num_conditions, num_observations, num_medications, num_encounters, server_choice, custom_server),
+            args=(num_patients, num_conditions, num_observations, num_medications, num_encounters, num_allergies, server_choice, custom_server),
             kwargs=date_params
         )
         thread.daemon = True
@@ -207,10 +215,11 @@ def generate_data():
     except Exception as e:
         return jsonify({'error': f'發生錯誤: {str(e)}'}), 500
 
-def generate_data_background(num_patients, num_conditions, num_observations, num_medications, num_encounters, server_choice, custom_server,
+def generate_data_background(num_patients, num_conditions, num_observations, num_medications, num_encounters, num_allergies, server_choice, custom_server,
                              encounter_date_from=None, encounter_date_to=None,
                              condition_date_from=None, condition_date_to=None,
-                             observation_date_from=None, observation_date_to=None):
+                             observation_date_from=None, observation_date_to=None,
+                             allergy_date_from=None, allergy_date_to=None):
     """背景執行緒中執行資料生成"""
     global generation_status
     
@@ -227,10 +236,11 @@ def generate_data_background(num_patients, num_conditions, num_observations, num
             generation_status['progress'] = 10 + (i / num_patients) * 40
             
             patient_data = generator.generate_complete_patient_data(
-                num_conditions, num_observations, num_medications, num_encounters,
+                num_conditions, num_observations, num_medications, num_allergies, num_encounters,
                 encounter_date_from=encounter_date_from, encounter_date_to=encounter_date_to,
                 condition_date_from=condition_date_from, condition_date_to=condition_date_to,
-                observation_date_from=observation_date_from, observation_date_to=observation_date_to
+                observation_date_from=observation_date_from, observation_date_to=observation_date_to,
+                allergy_date_from=allergy_date_from, allergy_date_to=allergy_date_to
             )
             all_patient_data.append(patient_data)
             time.sleep(0.1)  # 模擬處理時間
@@ -252,6 +262,7 @@ def generate_data_background(num_patients, num_conditions, num_observations, num
                 "patient": data["patient"],
                 "encounters": data["encounters"],
                 "conditions": data["conditions"],
+                "allergies": data["allergies"],
                 "observations": data["observations"],
                 "medications": data["medications"],
                 "medication_requests": data["medication_requests"]
@@ -294,6 +305,7 @@ def generate_data_background(num_patients, num_conditions, num_observations, num
             total_observations = sum(len(r["observations"]) for r in upload_results)
             total_medications = sum(len(r["medications"]) for r in upload_results)
             total_medication_requests = sum(len(r["medication_requests"]) for r in upload_results)
+            total_allergies = sum(len(r.get("allergies", [])) for r in upload_results)
             total_errors = sum(len(r["errors"]) for r in upload_results)
             
             with open(upload_result_file, 'w', encoding='utf-8') as f:
@@ -308,6 +320,7 @@ def generate_data_background(num_patients, num_conditions, num_observations, num
                         "observations": total_observations,
                         "medications": total_medications,
                         "medication_requests": total_medication_requests,
+                        "allergies": total_allergies,
                         "errors": total_errors
                     },
                     "results": upload_results
@@ -324,6 +337,7 @@ def generate_data_background(num_patients, num_conditions, num_observations, num
             'filename': str(filepath),
             'num_patients': num_patients,
             'num_encounters': num_encounters * num_patients,
+            'num_allergies': num_allergies * num_patients,
             'num_conditions': num_conditions * num_patients,
             'num_observations': num_observations * num_patients,
             'num_medications': num_medications * num_patients,
@@ -336,6 +350,7 @@ def generate_data_background(num_patients, num_conditions, num_observations, num
                 'server_url': server_url,
                 'successful_patients': successful_patients,
                 'total_encounters': total_encounters,
+                'total_allergies': total_allergies,
                 'total_conditions': total_conditions,
                 'total_observations': total_observations,
                 'total_medications': total_medications,
@@ -375,6 +390,7 @@ def get_info():
         'available_conditions': len(generator.conditions),
         'available_observations': len(generator.observations),
         'available_medications': len(generator.medications),
+        'available_allergies': len(generator.allergies),
         'version': '1.0.0'
     })
 
@@ -401,6 +417,14 @@ def get_medications():
     category = request.args.get('category')
     limit = request.args.get('limit', type=int)
     return jsonify(generator.list_available_medications(category=category, limit=limit))
+
+@app.route('/api/allergies')
+def get_allergies():
+    """獲取可用過敏項目列表"""
+    generator = TWFHIRGeneratorFixed()
+    category = request.args.get('category')
+    limit = request.args.get('limit', type=int)
+    return jsonify(generator.list_available_allergies(category=category, limit=limit))
 
 @app.route('/api/categories')
 def get_categories():
@@ -429,6 +453,7 @@ def generate_custom():
         selected_conditions = data.get('conditions', [])
         selected_observations = data.get('observations', [])
         selected_medications = data.get('medications', [])
+        selected_allergies = data.get('allergies', [])
         server_choice = data.get('server_choice', '1')
         custom_server = data.get('custom_server', '')
 
@@ -441,6 +466,7 @@ def generate_custom():
             selected_conditions=selected_conditions,
             selected_observations=selected_observations,
             selected_medications=selected_medications,
+            selected_allergies=selected_allergies,
             **date_params
         )
         
@@ -469,7 +495,8 @@ def generate_custom():
                 'conditions': len(patient_data['conditions']),
                 'observations': len(patient_data['observations']),
                 'medications': len(patient_data['medications']),
-                'medication_requests': len(patient_data['medication_requests'])
+                'medication_requests': len(patient_data['medication_requests']),
+                'allergies': len(patient_data['allergies']),
             }
         }
         
@@ -495,6 +522,7 @@ def generate_custom():
                 'uploaded_observations': len(upload_result['observations']),
                 'uploaded_medications': len(upload_result['medications']),
                 'uploaded_medication_requests': len(upload_result['medication_requests']),
+                'uploaded_allergies': len(upload_result.get('allergies', [])),
                 'errors': upload_result['errors']
             }
         

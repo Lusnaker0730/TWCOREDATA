@@ -356,6 +356,11 @@
                         </div>
                     </div>
 
+                    <div class="form-group">
+                        <label for="num_allergies">每人過敏記錄數 (可設為0)</label>
+                        <input type="number" id="num_allergies" name="num_allergies" value="1" min="0" max="20" required>
+                    </div>
+
                     <!-- 時間範圍設定 -->
                     <div class="form-group" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                         <label style="font-size: 1rem; color: #667eea; margin-bottom: 10px; display: block;">
@@ -391,6 +396,16 @@
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label for="observation_date_to" style="font-size: 0.85rem;">觀察記錄日期結束</label>
                                 <input type="date" id="observation_date_to" name="observation_date_to">
+                            </div>
+                        </div>
+                        <div class="form-row" style="margin-top: 10px;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="allergy_date_from" style="font-size: 0.85rem;">過敏記錄日期起始</label>
+                                <input type="date" id="allergy_date_from" name="allergy_date_from">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="allergy_date_to" style="font-size: 0.85rem;">過敏記錄日期結束</label>
+                                <input type="date" id="allergy_date_to" name="allergy_date_to">
                             </div>
                         </div>
                     </div>
@@ -457,6 +472,10 @@
                         <div class="label">可用藥物</div>
                     </div>
                     <div class="stat-item">
+                        <div class="number" id="allergiesCount">-</div>
+                        <div class="label">可用過敏</div>
+                    </div>
+                    <div class="stat-item">
                         <div class="number">1.0</div>
                         <div class="label">版本</div>
                     </div>
@@ -512,7 +531,8 @@
                 document.getElementById('num_observations').value = scenario.observations.length;
                 document.getElementById('num_medications').value = scenario.medications.length;
                 document.getElementById('num_encounters').value = scenario.num_encounters;
-                
+                document.getElementById('num_allergies').value = scenario.num_allergies || 0;
+
                 // 顯示提示
                 alert(`✨ 已套用 "${scenario.name}" 情境設定！\n\n` +
                       `🏥 建議生成: ${scenario.recommended_patient_count} 個病人\n` +
@@ -528,6 +548,7 @@
                 document.getElementById('conditionsCount').textContent = data.available_conditions;
                 document.getElementById('observationsCount').textContent = data.available_observations;
                 document.getElementById('medicationsCount').textContent = data.available_medications;
+                document.getElementById('allergiesCount').textContent = data.available_allergies || 0;
             })
             .catch(error => console.error('載入系統資訊失敗:', error));
 
@@ -628,6 +649,7 @@
             html += `<div class="stat-item"><div class="number">${results.num_observations}</div><div class="label">觀察</div></div>`;
             html += `<div class="stat-item"><div class="number">${results.num_medications}</div><div class="label">藥物</div></div>`;
             html += `<div class="stat-item"><div class="number">${results.num_medication_requests}</div><div class="label">處方</div></div>`;
+            html += `<div class="stat-item"><div class="number">${results.num_allergies || 0}</div><div class="label">過敏</div></div>`;
             html += '</div>';
             
             if (results.upload) {
@@ -640,6 +662,7 @@
                 html += `<p><strong>成功上傳觀察:</strong> ${results.upload.total_observations}</p>`;
                 html += `<p><strong>成功上傳藥物:</strong> ${results.upload.total_medications}</p>`;
                 html += `<p><strong>成功上傳處方:</strong> ${results.upload.total_medication_requests}</p>`;
+                html += `<p><strong>成功上傳過敏記錄:</strong> ${results.upload.total_allergies || 0}</p>`;
                 if (results.upload.total_errors > 0) {
                     html += `<p style="color: #dc3545;"><strong>錯誤數量:</strong> ${results.upload.total_errors}</p>`;
                 }
