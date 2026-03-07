@@ -18,16 +18,25 @@ class TWFHIRGeneratorFixed:
     # 門診機率較高的就診類型權重列表
     ENCOUNTER_TYPE_WEIGHTS = ["outpatient", "outpatient", "outpatient", "emergency", "inpatient"]
 
+    RESOURCE_LIST_FIELDS = {
+        "conditions": ["code", "display", "category", "system"],
+        "observations": ["code", "display", "category", "unit", "min_val", "max_val"],
+        "medications": ["code", "display", "category", "dosage_form", "strength", "atc"],
+        "allergies": ["code", "display", "category", "type", "criticality"],
+    }
+
     def __init__(self):
         """
         初始化台灣 FHIR 資料生成器 - 修復版
         """
         # 載入配置檔案
         self.config_loader = ConfigLoader()
-        self.conditions = self.config_loader.get_conditions()
-        self.observations = self.config_loader.get_observations()
-        self.medications = self.config_loader.get_medications()
-        self.allergies = self.config_loader.get_allergies()
+        self.resources = {
+            "conditions": self.config_loader.get_items("conditions"),
+            "observations": self.config_loader.get_items("observations"),
+            "medications": self.config_loader.get_items("medications"),
+            "allergies": self.config_loader.get_items("allergies"),
+        }
 
         # 台灣常見姓氏和名字
         self.surnames = [
@@ -53,6 +62,15 @@ class TWFHIRGeneratorFixed:
             "基隆市", "新竹市", "嘉義市", "新竹縣", "苗栗縣", "彰化縣",
             "南投縣", "雲林縣", "嘉義縣", "屏東縣", "宜蘭縣", "花蓮縣"
         ]
+
+    @property
+    def conditions(self): return self.resources["conditions"]
+    @property
+    def observations(self): return self.resources["observations"]
+    @property
+    def medications(self): return self.resources["medications"]
+    @property
+    def allergies(self): return self.resources["allergies"]
 
     def generate_taiwan_id(self, gender="random"):
         """生成台灣身份证号"""
@@ -905,88 +923,34 @@ class TWFHIRGeneratorFixed:
 
         # 處理指定的 Conditions
         conditions = []
-        if selected_conditions:
-            for item in selected_conditions:
-                if isinstance(item, int):
-                    if 0 <= item < len(self.conditions):
-                        condition_info = self.conditions[item]
-                        condition = self.generate_condition_with_info(patient_id, patient_name, condition_info,
-                                                                     date_from=condition_date_from, date_to=condition_date_to)
-                        conditions.append(condition)
-                elif isinstance(item, str):
-                    condition_info = self._find_condition_by_code(item)
-                    if condition_info:
-                        condition = self.generate_condition_with_info(patient_id, patient_name, condition_info,
-                                                                     date_from=condition_date_from, date_to=condition_date_to)
-                        conditions.append(condition)
-                elif isinstance(item, dict):
-                    condition = self.generate_condition_with_info(patient_id, patient_name, item,
-                                                                 date_from=condition_date_from, date_to=condition_date_to)
-                    conditions.append(condition)
+        for condition_info in self._resolve_items(selected_conditions, "conditions"):
+            conditions.append(self.generate_condition_with_info(patient_id, patient_name, condition_info,
+                                                                date_from=condition_date_from, date_to=condition_date_to))
 
         # 處理指定的 Observations
         observations = []
-        if selected_observations:
-            for item in selected_observations:
-                if isinstance(item, int):
-                    if 0 <= item < len(self.observations):
-                        obs_info = self.observations[item]
-                        observation = self.generate_observation_with_info(patient_id, patient_name, obs_info,
-                                                                         date_from=observation_date_from, date_to=observation_date_to)
-                        observations.append(observation)
-                elif isinstance(item, str):
-                    obs_info = self._find_observation_by_code(item)
-                    if obs_info:
-                        observation = self.generate_observation_with_info(patient_id, patient_name, obs_info,
-                                                                         date_from=observation_date_from, date_to=observation_date_to)
-                        observations.append(observation)
-                elif isinstance(item, dict):
-                    observation = self.generate_observation_with_info(patient_id, patient_name, item,
-                                                                     date_from=observation_date_from, date_to=observation_date_to)
-                    observations.append(observation)
-        
+        for obs_info in self._resolve_items(selected_observations, "observations"):
+            observations.append(self.generate_observation_with_info(patient_id, patient_name, obs_info,
+                                                                    date_from=observation_date_from, date_to=observation_date_to))
+
         # 處理指定的 Medications 和 MedicationRequests
         medications = []
         medication_requests = []
-        if selected_medications:
-            for item in selected_medications:
-                med_info = None
-                if isinstance(item, int):
-                    # 如果是索引
-                    if 0 <= item < len(self.medications):
-                        med_info = self.medications[item]
-                elif isinstance(item, str):
-                    # 如果是代碼，查找對應的藥物
-                    med_info = self._find_medication_by_code(item)
-                elif isinstance(item, dict):
-                    # 如果直接提供藥物資訊
-                    med_info = item
-                
-                if med_info:
-                    medication = self.generate_medication_with_info(patient_id, patient_name, med_info)
-                    medications.append(medication)
+        for med_info in self._resolve_items(selected_medications, "medications"):
+            medication = self.generate_medication_with_info(patient_id, patient_name, med_info)
+            medications.append(medication)
 
-                    # 為每個藥物生成對應的處方
-                    medication_request = self.generate_medication_request(
-                        patient_id, patient_name, medication["id"], medication["code"]["text"]
-                    )
-                    medication_requests.append(medication_request)
+            # 為每個藥物生成對應的處方
+            medication_request = self.generate_medication_request(
+                patient_id, patient_name, medication["id"], medication["code"]["text"]
+            )
+            medication_requests.append(medication_request)
 
         # 處理指定的 Allergies
         allergies = []
-        if selected_allergies:
-            for item in selected_allergies:
-                allergy_info = None
-                if isinstance(item, int):
-                    if 0 <= item < len(self.allergies):
-                        allergy_info = self.allergies[item]
-                elif isinstance(item, str):
-                    allergy_info = self._find_allergy_by_code(item)
-
-                if allergy_info:
-                    allergy = self.generate_allergy_with_info(patient_id, patient_name, allergy_info,
-                                                              date_from=allergy_date_from, date_to=allergy_date_to)
-                    allergies.append(allergy)
+        for allergy_info in self._resolve_items(selected_allergies, "allergies"):
+            allergies.append(self.generate_allergy_with_info(patient_id, patient_name, allergy_info,
+                                                             date_from=allergy_date_from, date_to=allergy_date_to))
 
         return {
             "patient": patient,
@@ -998,172 +962,62 @@ class TWFHIRGeneratorFixed:
             "allergies": allergies
         }
 
-    def _find_condition_by_code(self, code):
-        """根據代碼查找疾病"""
-        for condition in self.conditions:
-            if condition.get("code") == code:
-                return condition
+    def _find_item_by_code(self, resource_type, code):
+        """根據代碼查找項目"""
+        for item in self.resources[resource_type]:
+            if item.get("code") == code:
+                return item
         return None
 
-    def _find_observation_by_code(self, code):
-        """根據代碼查找觀察項目"""
-        for observation in self.observations:
-            if observation.get("code") == code:
-                return observation
-        return None
+    def _find_condition_by_code(self, code): return self._find_item_by_code("conditions", code)
+    def _find_observation_by_code(self, code): return self._find_item_by_code("observations", code)
+    def _find_medication_by_code(self, code): return self._find_item_by_code("medications", code)
+    def _find_allergy_by_code(self, code): return self._find_item_by_code("allergies", code)
 
-    def _find_medication_by_code(self, code):
-        """根據代碼查找藥物"""
-        for medication in self.medications:
-            if medication.get("code") == code:
-                return medication
-        return None
+    def _resolve_items(self, selected, resource_type):
+        """將 int(索引)/str(代碼) 列表解析為配置項目列表"""
+        resolved = []
+        items_list = self.resources.get(resource_type, [])
+        for item in (selected or []):
+            info = None
+            if isinstance(item, int):
+                if 0 <= item < len(items_list):
+                    info = items_list[item]
+            elif isinstance(item, str):
+                info = self._find_item_by_code(resource_type, item)
+            if info:
+                resolved.append(info)
+        return resolved
 
-    def _find_allergy_by_code(self, code):
-        """根據代碼查找過敏項目"""
-        for allergy in self.allergies:
-            if allergy.get("code") == code:
-                return allergy
-        return None
-
-    def list_available_conditions(self, category=None, limit=None):
-        """
-        列出可用的疾病
-        
-        Args:
-            category: 指定類別 (可選)
-            limit: 限制顯示數量 (可選)
-            
-        Returns:
-            疾病列表
-        """
-        conditions = self.conditions
-        
+    def list_available_items(self, resource_type, category=None, limit=None):
+        """列出可用的項目"""
+        items = self.resources.get(resource_type, [])
         if category:
-            conditions = [c for c in conditions if c.get("category_key") == category or c.get("category") == category]
-        
+            items = [item for item in items if item.get("category_key") == category or item.get("category") == category]
         if limit:
-            conditions = conditions[:limit]
-        
-        result = []
-        for i, condition in enumerate(conditions):
-            result.append({
-                "index": i,
-                "code": condition.get("code"),
-                "display": condition.get("display"),
-                "category": condition.get("category", "未分類"),
-                "system": condition.get("system")
-            })
-        
-        return result
+            items = items[:limit]
+        fields = self.RESOURCE_LIST_FIELDS.get(resource_type, ["code", "display", "category"])
+        return [
+            {"index": i, **{f: item.get(f, None) for f in fields}}
+            for i, item in enumerate(items)
+        ]
 
-    def list_available_observations(self, category=None, limit=None):
-        """
-        列出可用的觀察項目
-        
-        Args:
-            category: 指定類別 (可選)
-            limit: 限制顯示數量 (可選)
-            
-        Returns:
-            觀察項目列表
-        """
-        observations = self.observations
-        
-        if category:
-            observations = [o for o in observations if o.get("category_key") == category or o.get("category") == category]
-        
-        if limit:
-            observations = observations[:limit]
-        
-        result = []
-        for i, observation in enumerate(observations):
-            result.append({
-                "index": i,
-                "code": observation.get("code"),
-                "display": observation.get("display"),
-                "category": observation.get("category", "未分類"),
-                "unit": observation.get("unit"),
-                "min_val": observation.get("min_val"),
-                "max_val": observation.get("max_val")
-            })
-        
-        return result
-
-    def list_available_medications(self, category=None, limit=None):
-        """
-        列出可用的藥物
-        
-        Args:
-            category: 指定類別 (可選)
-            limit: 限制顯示數量 (可選)
-            
-        Returns:
-            藥物列表
-        """
-        medications = self.medications
-        
-        if category:
-            medications = [m for m in medications if m.get("category_key") == category or m.get("category") == category]
-        
-        if limit:
-            medications = medications[:limit]
-        
-        result = []
-        for i, medication in enumerate(medications):
-            result.append({
-                "index": i,
-                "code": medication.get("code"),
-                "display": medication.get("display"),
-                "category": medication.get("category", "未分類"),
-                "dosage_form": medication.get("dosage_form"),
-                "strength": medication.get("strength"),
-                "atc": medication.get("atc")
-            })
-        
-        return result
-
-    def list_available_allergies(self, category=None, limit=None):
-        """列出可用的過敏項目"""
-        allergies = self.allergies
-
-        if category:
-            allergies = [a for a in allergies if a.get("category_key") == category or a.get("category") == category]
-
-        if limit:
-            allergies = allergies[:limit]
-
-        result = []
-        for i, allergy in enumerate(allergies):
-            result.append({
-                "index": i,
-                "code": allergy.get("code"),
-                "display": allergy.get("display"),
-                "category": allergy.get("category", "未分類"),
-                "type": allergy.get("type"),
-                "criticality": allergy.get("criticality")
-            })
-
-        return result
+    def list_available_conditions(self, **kw): return self.list_available_items("conditions", **kw)
+    def list_available_observations(self, **kw): return self.list_available_items("observations", **kw)
+    def list_available_medications(self, **kw): return self.list_available_items("medications", **kw)
+    def list_available_allergies(self, **kw): return self.list_available_items("allergies", **kw)
 
     def get_categories(self):
         """獲取所有可用的類別"""
-        condition_categories = list(set(c.get("category", "未分類") for c in self.conditions))
-        observation_categories = list(set(o.get("category", "未分類") for o in self.observations))
-        medication_categories = list(set(m.get("category", "未分類") for m in self.medications))
-        allergy_categories = list(set(a.get("category", "未分類") for a in self.allergies))
-
         return {
-            "conditions": sorted(condition_categories),
-            "observations": sorted(observation_categories),
-            "medications": sorted(medication_categories),
-            "allergies": sorted(allergy_categories)
+            rtype: sorted(set(item.get("category", "未分類") for item in items))
+            for rtype, items in self.resources.items()
         }
 
     def search_items(self, query, item_type="all"):
         """
         搜尋項目
-        
+
         Args:
             query: 搜尋關鍵字
             item_type: 項目類型 ("conditions", "observations", "medications", "allergies", "all")
@@ -1172,60 +1026,19 @@ class TWFHIRGeneratorFixed:
             搜尋結果
         """
         query = query.lower()
-        results = {"conditions": [], "observations": [], "medications": [], "allergies": []}
-
-        if item_type in ["conditions", "all"]:
-            for i, condition in enumerate(self.conditions):
-                if (query in condition.get("display", "").lower() or
-                    query in condition.get("code", "").lower() or
-                    query in condition.get("category", "").lower()):
-                    results["conditions"].append({
-                        "index": i,
-                        "code": condition.get("code"),
-                        "display": condition.get("display"),
-                        "category": condition.get("category", "未分類")
-                    })
-
-        if item_type in ["observations", "all"]:
-            for i, observation in enumerate(self.observations):
-                if (query in observation.get("display", "").lower() or
-                    query in observation.get("code", "").lower() or
-                    query in observation.get("category", "").lower()):
-                    results["observations"].append({
-                        "index": i,
-                        "code": observation.get("code"),
-                        "display": observation.get("display"),
-                        "category": observation.get("category", "未分類"),
-                        "unit": observation.get("unit")
-                    })
-
-        if item_type in ["medications", "all"]:
-            for i, medication in enumerate(self.medications):
-                if (query in medication.get("display", "").lower() or
-                    query in medication.get("code", "").lower() or
-                    query in medication.get("category", "").lower()):
-                    results["medications"].append({
-                        "index": i,
-                        "code": medication.get("code"),
-                        "display": medication.get("display"),
-                        "category": medication.get("category", "未分類"),
-                        "strength": medication.get("strength")
-                    })
-
-        if item_type in ["allergies", "all"]:
-            for i, allergy in enumerate(self.allergies):
-                if (query in allergy.get("display", "").lower() or
-                    query in allergy.get("code", "").lower() or
-                    query in allergy.get("category", "").lower()):
-                    results["allergies"].append({
-                        "index": i,
-                        "code": allergy.get("code"),
-                        "display": allergy.get("display"),
-                        "category": allergy.get("category", "未分類"),
-                        "type": allergy.get("type"),
-                        "criticality": allergy.get("criticality")
-                    })
-
+        results = {}
+        for rtype, items in self.resources.items():
+            if item_type not in [rtype, "all"]:
+                results[rtype] = []
+                continue
+            fields = self.RESOURCE_LIST_FIELDS.get(rtype, ["code", "display", "category"])
+            results[rtype] = [
+                {"index": i, **{f: item.get(f, None) for f in fields}}
+                for i, item in enumerate(items)
+                if (query in item.get("display", "").lower() or
+                    query in item.get("code", "").lower() or
+                    query in item.get("category", "").lower())
+            ]
         return results
 
     def upload_resource_to_server(self, resource, server_url):
@@ -1274,94 +1087,44 @@ class TWFHIRGeneratorFixed:
             
             # 更新 Patient ID 引用
             new_patient_id = result
-            
-            # 上傳 Encounters (就診記錄)
-            if 'encounters' in patient_data:
-                for i, encounter in enumerate(patient_data['encounters']):
-                    encounter['subject']['reference'] = f"Patient/{new_patient_id}"
-                    print(f"📤 上傳 Encounter {i+1}: {encounter['class']['display']}")
-                    
-                    success, result = self.upload_resource_to_server(encounter, server_url)
+
+            UPLOAD_CONFIG = [
+                {"key": "encounters", "ref_field": "subject", "display_path": lambda r: r['class']['display'], "label": "Encounter"},
+                {"key": "conditions", "ref_field": "subject", "display_path": lambda r: r['code']['text'], "label": "Condition"},
+                {"key": "allergies", "ref_field": "patient", "display_path": lambda r: r['code']['text'], "label": "AllergyIntolerance"},
+                {"key": "observations", "ref_field": "subject", "display_path": lambda r: r['code']['text'], "label": "Observation"},
+                {"key": "medications", "ref_field": None, "display_path": lambda r: r['code']['text'], "label": "Medication"},
+            ]
+
+            for config in UPLOAD_CONFIG:
+                key = config["key"]
+                if key not in patient_data:
+                    continue
+                for i, resource in enumerate(patient_data[key]):
+                    if config["ref_field"]:
+                        resource[config["ref_field"]]['reference'] = f"Patient/{new_patient_id}"
+                    display = config["display_path"](resource)
+                    print(f"📤 上傳 {config['label']} {i+1}: {display}")
+
+                    success, result = self.upload_resource_to_server(resource, server_url)
                     if success:
-                        results["encounters"].append(result)
-                        print(f"   ✅ Encounter 上傳成功，ID: {result}")
+                        results[key].append(result)
+                        print(f"   ✅ {config['label']} 上傳成功，ID: {result}")
                     else:
-                        results["errors"].append(f"Encounter {i+1}: {result}")
-                        print(f"   ❌ Encounter 上傳失敗: {result}")
-                    
-                    time.sleep(0.5)  # 避免過於頻繁的請求
-            
-            # 上傳 Conditions
-            for i, condition in enumerate(patient_data['conditions']):
-                condition['subject']['reference'] = f"Patient/{new_patient_id}"
-                print(f"📤 上傳 Condition {i+1}: {condition['code']['text']}")
-                
-                success, result = self.upload_resource_to_server(condition, server_url)
-                if success:
-                    results["conditions"].append(result)
-                    print(f"   ✅ Condition 上傳成功，ID: {result}")
-                else:
-                    results["errors"].append(f"Condition {i+1}: {result}")
-                    print(f"   ❌ Condition 上傳失敗: {result}")
-                
-                time.sleep(0.5)  # 避免过于频繁的请求
-
-            # 上傳 Allergies
-            if 'allergies' in patient_data:
-                for i, allergy in enumerate(patient_data['allergies']):
-                    allergy['patient']['reference'] = f"Patient/{new_patient_id}"
-                    print(f"📤 上傳 AllergyIntolerance {i+1}: {allergy['code']['text']}")
-
-                    success, result = self.upload_resource_to_server(allergy, server_url)
-                    if success:
-                        results["allergies"].append(result)
-                        print(f"   ✅ AllergyIntolerance 上傳成功，ID: {result}")
-                    else:
-                        results["errors"].append(f"AllergyIntolerance {i+1}: {result}")
-                        print(f"   ❌ AllergyIntolerance 上傳失敗: {result}")
-
+                        results["errors"].append(f"{config['label']} {i+1}: {result}")
+                        print(f"   ❌ {config['label']} 上傳失敗: {result}")
                     time.sleep(0.5)
 
-            # 上傳 Observations
-            for i, observation in enumerate(patient_data['observations']):
-                observation['subject']['reference'] = f"Patient/{new_patient_id}"
-                print(f"📤 上傳 Observation {i+1}: {observation['code']['text']}")
-                
-                success, result = self.upload_resource_to_server(observation, server_url)
-                if success:
-                    results["observations"].append(result)
-                    print(f"   ✅ Observation 上傳成功，ID: {result}")
-                else:
-                    results["errors"].append(f"Observation {i+1}: {result}")
-                    print(f"   ❌ Observation 上傳失敗: {result}")
-                
-                time.sleep(0.5)
-            
-            # 上傳 Medications
-            if 'medications' in patient_data:
-                for i, medication in enumerate(patient_data['medications']):
-                    print(f"📤 上傳 Medication {i+1}: {medication['code']['text']}")
-                    
-                    success, result = self.upload_resource_to_server(medication, server_url)
-                    if success:
-                        results["medications"].append(result)
-                        print(f"   ✅ Medication 上傳成功，ID: {result}")
-                    else:
-                        results["errors"].append(f"Medication {i+1}: {result}")
-                        print(f"   ❌ Medication 上傳失敗: {result}")
-                    
-                    time.sleep(0.5)
-            
-            # 上傳 MedicationRequests
+            # 上傳 MedicationRequests (特殊處理：需要更新 Medication 引用)
             if 'medication_requests' in patient_data:
                 for i, med_request in enumerate(patient_data['medication_requests']):
                     # 更新 Patient 和 Medication 的引用
                     med_request['subject']['reference'] = f"Patient/{new_patient_id}"
                     if i < len(results["medications"]):
                         med_request['medicationReference']['reference'] = f"Medication/{results['medications'][i]}"
-                    
+
                     print(f"📤 上傳 MedicationRequest {i+1}: {med_request['medicationReference']['display']}")
-                    
+
                     success, result = self.upload_resource_to_server(med_request, server_url)
                     if success:
                         results["medication_requests"].append(result)
@@ -1369,7 +1132,7 @@ class TWFHIRGeneratorFixed:
                     else:
                         results["errors"].append(f"MedicationRequest {i+1}: {result}")
                         print(f"   ❌ MedicationRequest 上傳失敗: {result}")
-                
+
                 time.sleep(0.5)
         else:
             results["errors"].append(f"Patient: {result}")

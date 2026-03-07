@@ -570,20 +570,21 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // 全域變數
-        let selectedConditions = [];
-        let selectedObservations = [];
-        let selectedMedications = [];
-        let selectedAllergies = [];
-        let allConditions = [];
-        let allObservations = [];
-        let allMedications = [];
-        let allAllergies = [];
+        const RESOURCE_CONFIG = {
+            conditions: { singular: 'condition', label: '疾病', listId: 'conditionList', searchId: 'conditionSearch', categoryId: 'conditionCategory', summaryId: 'conditionSummary', countId: 'conditionCount' },
+            observations: { singular: 'observation', label: '觀察項目', listId: 'observationList', searchId: 'observationSearch', categoryId: 'observationCategory', summaryId: 'observationSummary', countId: 'observationCount' },
+            medications: { singular: 'medication', label: '藥物', listId: 'medicationList', searchId: 'medicationSearch', categoryId: 'medicationCategory', summaryId: 'medicationSummary', countId: 'medicationCount' },
+            allergies: { singular: 'allergy', label: '過敏項目', listId: 'allergyList', searchId: 'allergySearch', categoryId: 'allergyCategory', summaryId: 'allergySummary', countId: 'allergyCount' },
+        };
+
+        let selectedItems = { conditions: [], observations: [], medications: [], allergies: [] };
+        let allItems = { conditions: [], observations: [], medications: [], allergies: [] };
         let categories = {};
 
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
             loadCategories();
-            loadConditions();
+            loadItems('conditions');
             setupEventListeners();
         });
 
@@ -594,10 +595,9 @@
                 categories = await response.json();
                 
                 // 填充類別選擇器
-                populateSelect('conditionCategory', categories.conditions);
-                populateSelect('observationCategory', categories.observations);
-                populateSelect('medicationCategory', categories.medications);
-                if (categories.allergies) populateSelect('allergyCategory', categories.allergies);
+                for (const [rtype, config] of Object.entries(RESOURCE_CONFIG)) {
+                    if (categories[rtype]) populateSelect(config.categoryId, categories[rtype]);
+                }
             } catch (error) {
                 console.error('載入類別失敗:', error);
             }
@@ -614,97 +614,26 @@
             });
         }
 
-        // 載入疾病
-        async function loadConditions(category = '', search = '') {
+        async function loadItems(resourceType, category = '', search = '') {
             try {
-                let url = '/api/conditions?limit=50';
-                if (category) url += `&category=${encodeURIComponent(category)}`;
-                
-                const response = await fetch(url);
-                allConditions = await response.json();
-                
-                // 如果有搜尋關鍵字，進行篩選
-                let filteredConditions = allConditions;
-                if (search) {
-                    filteredConditions = allConditions.filter(item => 
-                        item.display.toLowerCase().includes(search.toLowerCase()) ||
-                        item.code.toLowerCase().includes(search.toLowerCase())
-                    );
-                }
-                
-                displayItems('conditionList', filteredConditions, 'condition');
-            } catch (error) {
-                console.error('載入疾病失敗:', error);
-            }
-        }
-
-        // 載入觀察項目
-        async function loadObservations(category = '', search = '') {
-            try {
-                let url = '/api/observations?limit=50';
-                if (category) url += `&category=${encodeURIComponent(category)}`;
-                
-                const response = await fetch(url);
-                allObservations = await response.json();
-                
-                // 如果有搜尋關鍵字，進行篩選
-                let filteredObservations = allObservations;
-                if (search) {
-                    filteredObservations = allObservations.filter(item => 
-                        item.display.toLowerCase().includes(search.toLowerCase()) ||
-                        item.code.toLowerCase().includes(search.toLowerCase())
-                    );
-                }
-                
-                displayItems('observationList', filteredObservations, 'observation');
-            } catch (error) {
-                console.error('載入觀察項目失敗:', error);
-            }
-        }
-
-        // 載入藥物
-        async function loadMedications(category = '', search = '') {
-            try {
-                let url = '/api/medications?limit=50';
-                if (category) url += `&category=${encodeURIComponent(category)}`;
-                
-                const response = await fetch(url);
-                allMedications = await response.json();
-                
-                // 如果有搜尋關鍵字，進行篩選
-                let filteredMedications = allMedications;
-                if (search) {
-                    filteredMedications = allMedications.filter(item => 
-                        item.display.toLowerCase().includes(search.toLowerCase()) ||
-                        item.code.toLowerCase().includes(search.toLowerCase())
-                    );
-                }
-                
-                displayItems('medicationList', filteredMedications, 'medication');
-            } catch (error) {
-                console.error('載入藥物失敗:', error);
-            }
-        }
-
-        async function loadAllergies(category = '', search = '') {
-            try {
-                let url = '/api/allergies?limit=50';
+                let url = `/api/${resourceType}?limit=50`;
                 if (category) url += `&category=${encodeURIComponent(category)}`;
 
                 const response = await fetch(url);
-                allAllergies = await response.json();
+                allItems[resourceType] = await response.json();
 
-                let filteredAllergies = allAllergies;
+                let filtered = allItems[resourceType];
                 if (search) {
-                    filteredAllergies = allAllergies.filter(item =>
+                    filtered = filtered.filter(item =>
                         item.display.toLowerCase().includes(search.toLowerCase()) ||
                         item.code.toLowerCase().includes(search.toLowerCase())
                     );
                 }
 
-                displayItems('allergyList', filteredAllergies, 'allergy');
+                const config = RESOURCE_CONFIG[resourceType];
+                displayItems(config.listId, filtered, config.singular);
             } catch (error) {
-                console.error('載入過敏項目失敗:', error);
+                console.error(`載入${RESOURCE_CONFIG[resourceType].label}失敗:`, error);
             }
         }
 
@@ -753,59 +682,29 @@
 
         // 選擇項目
         function selectItem(index, type) {
-            let item, selectedArray, displayId;
-            
-            if (type === 'condition') {
-                item = allConditions.find(c => c.index === index);
-                selectedArray = selectedConditions;
-                displayId = 'selectedConditions';
-            } else if (type === 'observation') {
-                item = allObservations.find(o => o.index === index);
-                selectedArray = selectedObservations;
-                displayId = 'selectedObservations';
-            } else if (type === 'medication') {
-                item = allMedications.find(m => m.index === index);
-                selectedArray = selectedMedications;
-                displayId = 'selectedMedications';
-            } else if (type === 'allergy') {
-                item = allAllergies.find(a => a.index === index);
-                selectedArray = selectedAllergies;
-                displayId = 'selectedAllergies';
-            }
+            const resourceType = Object.keys(RESOURCE_CONFIG).find(k => RESOURCE_CONFIG[k].singular === type);
+            if (!resourceType) return;
 
-            // 檢查是否已經選擇
-            if (selectedArray.some(selected => selected.index === index)) {
+            const config = RESOURCE_CONFIG[resourceType];
+            const item = allItems[resourceType].find(i => i.index === index);
+            if (!item) return;
+
+            if (selectedItems[resourceType].some(selected => selected.index === index)) {
                 alert('此項目已經選擇過了');
                 return;
             }
-            
-            selectedArray.push(item);
-            updateSelectedDisplay(displayId, selectedArray, type);
+
+            selectedItems[resourceType].push(item);
+            updateSummaryDisplay();
         }
 
         // 移除選擇的項目
         function removeItem(index, type) {
-            let selectedArray, displayId;
-            
-            if (type === 'condition') {
-                selectedArray = selectedConditions;
-                displayId = 'selectedConditions';
-                selectedConditions = selectedConditions.filter(item => item.index !== index);
-            } else if (type === 'observation') {
-                selectedArray = selectedObservations;
-                displayId = 'selectedObservations';
-                selectedObservations = selectedObservations.filter(item => item.index !== index);
-            } else if (type === 'medication') {
-                selectedArray = selectedMedications;
-                displayId = 'selectedMedications';
-                selectedMedications = selectedMedications.filter(item => item.index !== index);
-            } else if (type === 'allergy') {
-                selectedArray = selectedAllergies;
-                displayId = 'selectedAllergies';
-                selectedAllergies = selectedAllergies.filter(item => item.index !== index);
-            }
+            const resourceType = Object.keys(RESOURCE_CONFIG).find(k => RESOURCE_CONFIG[k].singular === type);
+            if (!resourceType) return;
 
-            updateSelectedDisplay(displayId, selectedArray, type);
+            selectedItems[resourceType] = selectedItems[resourceType].filter(item => item.index !== index);
+            updateSummaryDisplay();
         }
 
         // 更新已選擇項目的顯示
@@ -816,17 +715,9 @@
         
         // 更新統一總結區域
         function updateSummaryDisplay() {
-            // 更新疾病總結
-            updateSummarySection('conditionSummary', 'conditionCount', selectedConditions, 'condition', '疾病');
-            
-            // 更新觀察項目總結
-            updateSummarySection('observationSummary', 'observationCount', selectedObservations, 'observation', '觀察項目');
-            
-            // 更新藥物總結
-            updateSummarySection('medicationSummary', 'medicationCount', selectedMedications, 'medication', '藥物');
-
-            // 更新過敏總結
-            updateSummarySection('allergySummary', 'allergyCount', selectedAllergies, 'allergy', '過敏項目');
+            for (const [rtype, config] of Object.entries(RESOURCE_CONFIG)) {
+                updateSummarySection(config.summaryId, config.countId, selectedItems[rtype], config.singular, config.label);
+            }
         }
         
         // 更新特定類型的總結區域
@@ -856,77 +747,45 @@
 
         // 獲取類型名稱
         function getTypeName(type) {
-            const names = {
-                'condition': '疾病',
-                'observation': '觀察項目',
-                'medication': '藥物',
-                'allergy': '過敏項目'
-            };
-            return names[type] || '項目';
+            const entry = Object.values(RESOURCE_CONFIG).find(c => c.singular === type);
+            return entry ? entry.label : '項目';
         }
 
         // 設置事件監聽器
         function setupEventListeners() {
-            // 搜尋框
-            document.getElementById('conditionSearch').addEventListener('input', function(e) {
-                const category = document.getElementById('conditionCategory').value;
-                loadConditions(category, e.target.value);
-            });
-            
-            document.getElementById('observationSearch').addEventListener('input', function(e) {
-                const category = document.getElementById('observationCategory').value;
-                loadObservations(category, e.target.value);
-            });
-            
-            document.getElementById('medicationSearch').addEventListener('input', function(e) {
-                const category = document.getElementById('medicationCategory').value;
-                loadMedications(category, e.target.value);
-            });
-            
-            // 類別選擇器
-            document.getElementById('conditionCategory').addEventListener('change', function(e) {
-                const search = document.getElementById('conditionSearch').value;
-                loadConditions(e.target.value, search);
-            });
-            
-            document.getElementById('observationCategory').addEventListener('change', function(e) {
-                const search = document.getElementById('observationSearch').value;
-                loadObservations(e.target.value, search);
-            });
-            
-            document.getElementById('medicationCategory').addEventListener('change', function(e) {
-                const search = document.getElementById('medicationSearch').value;
-                loadMedications(e.target.value, search);
-            });
+            // 資源搜尋和類別事件監聽器
+            for (const [rtype, config] of Object.entries(RESOURCE_CONFIG)) {
+                const searchEl = document.getElementById(config.searchId);
+                const categoryEl = document.getElementById(config.categoryId);
 
-            document.getElementById('allergySearch').addEventListener('input', function(e) {
-                const category = document.getElementById('allergyCategory').value;
-                loadAllergies(category, e.target.value);
-            });
-
-            document.getElementById('allergyCategory').addEventListener('change', function(e) {
-                const search = document.getElementById('allergySearch').value;
-                loadAllergies(e.target.value, search);
-            });
-
-            // 選項卡切換時載入資料
-            document.getElementById('observations-tab').addEventListener('shown.bs.tab', function() {
-                if (allObservations.length === 0) {
-                    loadObservations();
+                if (searchEl) {
+                    searchEl.addEventListener('input', function(e) {
+                        const cat = document.getElementById(config.categoryId).value;
+                        loadItems(rtype, cat, e.target.value);
+                    });
                 }
-            });
-            
-            document.getElementById('medications-tab').addEventListener('shown.bs.tab', function() {
-                if (allMedications.length === 0) {
-                    loadMedications();
-                }
-            });
 
-            document.getElementById('allergies-tab').addEventListener('shown.bs.tab', function() {
-                if (allAllergies.length === 0) {
-                    loadAllergies();
+                if (categoryEl) {
+                    categoryEl.addEventListener('change', function(e) {
+                        const search = document.getElementById(config.searchId).value;
+                        loadItems(rtype, e.target.value, search);
+                    });
                 }
-            });
+            }
+
+            // Tab 切換時懶載入
+            const tabLoadMap = {
+                'observations-tab': 'observations',
+                'medications-tab': 'medications',
+                'allergies-tab': 'allergies',
+            };
+            for (const [tabId, rtype] of Object.entries(tabLoadMap)) {
+                document.getElementById(tabId).addEventListener('shown.bs.tab', function() {
+                    if (allItems[rtype].length === 0) {
+                        loadItems(rtype);
+                    }
+                });
+            }
 
             // 頂部上傳選項
             document.getElementById('uploadToServerTop').addEventListener('change', function(e) {
@@ -944,7 +803,8 @@
         // 生成自定義病人資料
         async function generateCustomPatient() {
             // 檢查是否至少選擇了一個項目
-            if (selectedConditions.length === 0 && selectedObservations.length === 0 && selectedMedications.length === 0 && selectedAllergies.length === 0) {
+            const hasSelection = Object.values(selectedItems).some(arr => arr.length > 0);
+            if (!hasSelection) {
                 alert('請至少選擇一個疾病、觀察項目、藥物或過敏項目');
                 return;
             }
@@ -958,10 +818,10 @@
             
             try {
                 const requestData = {
-                    conditions: selectedConditions.map(item => item.index),
-                    observations: selectedObservations.map(item => item.index),
-                    medications: selectedMedications.map(item => item.index),
-                    allergies: selectedAllergies.map(item => item.index),
+                    conditions: selectedItems.conditions.map(item => item.index),
+                    observations: selectedItems.observations.map(item => item.index),
+                    medications: selectedItems.medications.map(item => item.index),
+                    allergies: selectedItems.allergies.map(item => item.index),
                     upload: document.getElementById('uploadToServerTop').checked,
                     server_choice: document.getElementById('serverChoiceTop').value,
                     custom_server: document.getElementById('customServerTop').value,
@@ -1115,10 +975,9 @@
         // 生成另一個病人（清除當前選擇）
         function generateAnother() {
             // 清除所有選擇
-            selectedConditions = [];
-            selectedObservations = [];
-            selectedMedications = [];
-            selectedAllergies = [];
+            for (const rtype of Object.keys(selectedItems)) {
+                selectedItems[rtype] = [];
+            }
 
             // 更新顯示
             updateSummaryDisplay();
