@@ -31,9 +31,10 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
     && pip install --no-cache-dir -r requirements.txt
 
 # 複製應用程式文件
-COPY app.py generate_TW_patients.py config_loader.py run.py ./
+COPY app.py generate_TW_patients.py config_loader.py load_terminology.py run.py models.py ./
 COPY config/ ./config/
 COPY templates/ ./templates/
+COPY package/ ./package/
 
 # 創建輸出目錄
 RUN mkdir -p /app/output/complete_patients_fixed \

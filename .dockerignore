@@ -74,4 +74,3 @@ docker-compose*.yml
 # 其他不需要的文件
 summary.md
 twcore*
-package/

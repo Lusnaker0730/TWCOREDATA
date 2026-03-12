@@ -13,6 +13,22 @@ import sys
 import argparse
 from pathlib import Path
 
+def _load_terminology_background():
+    """Load terminology resources into HAPI FHIR in a background thread."""
+    import threading
+
+    def _run():
+        try:
+            from load_terminology import main as load_main
+            load_main()
+        except Exception as e:
+            print(f"⚠️  術語載入失敗 / Terminology loading failed: {e}")
+
+    t = threading.Thread(target=_run, name="terminology-loader", daemon=True)
+    t.start()
+    print("📚 背景載入術語資源中... / Loading terminology resources in background...")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='台灣 FHIR 病人資料生成器 / Taiwan FHIR Patient Data Generator',
@@ -93,10 +109,14 @@ def main():
     for dir_path in output_dirs:
         Path(dir_path).mkdir(parents=True, exist_ok=True)
     
+    # 啟動前自動載入術語資源 / Auto-load terminology resources before starting
+    if not args.cli:
+        _load_terminology_background()
+
     if args.cli:
         print("🏥 啟動命令列模式 / Starting CLI mode...")
         print("=" * 50)
-        
+
         # 導入並執行命令列版本
         try:
             from generate_TW_patients import main as cli_main
@@ -106,7 +126,7 @@ def main():
         except Exception as e:
             print(f"\n❌ 執行錯誤 / Execution error: {e}")
             sys.exit(1)
-            
+
     else:
         print("🌐 啟動Web界面 / Starting Web UI...")
         print("=" * 50)

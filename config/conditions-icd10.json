@@ -1,0 +1,188 @@
+{
+  "description": "台灣常見疾病診斷資料庫 - 使用 ICD-10-CM 代碼",
+  "version": "1.0.0",
+  "last_updated": "2026-02-20",
+  "system": "http://hl7.org/fhir/sid/icd-10-cm",
+  "categories": {
+    "cardiovascular": {
+      "name": "心血管疾病",
+      "conditions": [
+        {"code": "I10", "display": "Essential (primary) hypertension", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "I11.9", "display": "Hypertensive heart disease without heart failure", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "I21.9", "display": "Acute myocardial infarction, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "I25.10", "display": "Atherosclerotic heart disease of native coronary artery without angina pectoris", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "I25.9", "display": "Chronic ischemic heart disease, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "I48.91", "display": "Unspecified atrial fibrillation", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "I50.9", "display": "Heart failure, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "I63.9", "display": "Cerebral infarction, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "I73.9", "display": "Peripheral vascular disease, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "I82.90", "display": "Acute embolism and thrombosis of unspecified vein", "system": "http://hl7.org/fhir/sid/icd-10-cm"}
+      ]
+    },
+    "respiratory": {
+      "name": "呼吸系統疾病",
+      "conditions": [
+        {"code": "J00", "display": "Acute nasopharyngitis [common cold]", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "J06.9", "display": "Acute upper respiratory infection, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "J18.9", "display": "Pneumonia, unspecified organism", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "J44.9", "display": "Chronic obstructive pulmonary disease, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "J45.909", "display": "Unspecified asthma, uncomplicated", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "J84.9", "display": "Interstitial pulmonary disease, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "J98.4", "display": "Other disorders of lung", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "R05.9", "display": "Cough, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "R06.00", "display": "Dyspnea, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "J47.9", "display": "Bronchiectasis, uncomplicated", "system": "http://hl7.org/fhir/sid/icd-10-cm"}
+      ]
+    },
+    "digestive": {
+      "name": "消化系統疾病",
+      "conditions": [
+        {"code": "K21.0", "display": "Gastro-esophageal reflux disease with esophagitis", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "K25.9", "display": "Gastric ulcer, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "K26.9", "display": "Duodenal ulcer, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "K29.70", "display": "Gastritis, unspecified, without bleeding", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "K59.00", "display": "Constipation, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "K74.60", "display": "Unspecified cirrhosis of liver", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "K75.9", "display": "Inflammatory liver disease, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "K80.20", "display": "Calculus of gallbladder without cholecystitis", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "R11.10", "display": "Vomiting, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "R19.7", "display": "Diarrhea, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"}
+      ]
+    },
+    "neurological": {
+      "name": "神經系統疾病",
+      "conditions": [
+        {"code": "G20", "display": "Parkinson's disease", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "G30.9", "display": "Alzheimer's disease, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "G40.909", "display": "Epilepsy, unspecified, not intractable", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "G43.909", "display": "Migraine, unspecified, not intractable", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "G47.00", "display": "Insomnia, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "F32.9", "display": "Major depressive disorder, single episode, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "F41.9", "display": "Anxiety disorder, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "R51.9", "display": "Headache, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "G62.9", "display": "Polyneuropathy, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "R55", "display": "Syncope and collapse", "system": "http://hl7.org/fhir/sid/icd-10-cm"}
+      ]
+    },
+    "infectious": {
+      "name": "感染性疾病",
+      "conditions": [
+        {"code": "A01.00", "display": "Typhoid fever, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "A49.1", "display": "Streptococcal infection, unspecified site", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "A90", "display": "Dengue fever [classical dengue]", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "B19.9", "display": "Unspecified viral hepatitis without hepatic coma", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "J00", "display": "Acute nasopharyngitis [common cold]", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "J02.9", "display": "Acute pharyngitis, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "J11.1", "display": "Influenza due to unidentified influenza virus with other respiratory manifestations", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "N39.0", "display": "Urinary tract infection, site not specified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "R50.9", "display": "Fever, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "U07.1", "display": "COVID-19", "system": "http://hl7.org/fhir/sid/icd-10-cm"}
+      ]
+    },
+    "musculoskeletal": {
+      "name": "骨骼肌肉系統疾病",
+      "conditions": [
+        {"code": "M06.9", "display": "Rheumatoid arthritis, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "M10.9", "display": "Gout, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "M19.90", "display": "Unspecified osteoarthritis, unspecified site", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "M54.50", "display": "Low back pain, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "M54.9", "display": "Dorsalgia, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "M79.10", "display": "Myalgia, unspecified site", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "M81.0", "display": "Age-related osteoporosis without current pathological fracture", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "R52", "display": "Pain, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "M25.50", "display": "Pain in unspecified joint", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "M62.830", "display": "Muscle spasm of back", "system": "http://hl7.org/fhir/sid/icd-10-cm"}
+      ]
+    },
+    "endocrine": {
+      "name": "內分泌疾病",
+      "conditions": [
+        {"code": "E03.9", "display": "Hypothyroidism, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "E04.1", "display": "Nontoxic single thyroid nodule", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "E05.90", "display": "Thyrotoxicosis, unspecified without thyrotoxic crisis", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "E11.9", "display": "Type 2 diabetes mellitus without complications", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "E11.65", "display": "Type 2 diabetes mellitus with hyperglycemia", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "E24.9", "display": "Cushing's syndrome, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "E27.40", "display": "Unspecified adrenocortical insufficiency", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "E28.2", "display": "Polycystic ovarian syndrome", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "E66.9", "display": "Obesity, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "E88.81", "display": "Metabolic syndrome", "system": "http://hl7.org/fhir/sid/icd-10-cm"}
+      ]
+    },
+    "genitourinary": {
+      "name": "泌尿生殖系統疾病",
+      "conditions": [
+        {"code": "D25.9", "display": "Leiomyoma of uterus, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "N18.9", "display": "Chronic kidney disease, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "N20.0", "display": "Calculus of kidney", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "N21.0", "display": "Calculus in bladder", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "N30.90", "display": "Cystitis, unspecified without hematuria", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "N40.0", "display": "Benign prostatic hyperplasia without lower urinary tract symptoms", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "N41.9", "display": "Inflammatory disease of prostate, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "N92.6", "display": "Irregular menstruation, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "N94.6", "display": "Dysmenorrhea, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "N95.1", "display": "Menopausal and female climacteric states", "system": "http://hl7.org/fhir/sid/icd-10-cm"}
+      ]
+    },
+    "dermatological": {
+      "name": "皮膚疾病",
+      "conditions": [
+        {"code": "B07.9", "display": "Viral wart, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "C43.9", "display": "Malignant melanoma of skin, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "C44.90", "display": "Unspecified malignant neoplasm of skin, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "D18.01", "display": "Hemangioma of skin and subcutaneous tissue", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "L29.9", "display": "Pruritus, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "L30.9", "display": "Dermatitis, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "L40.9", "display": "Psoriasis, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "L53.9", "display": "Erythematous condition, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "L70.0", "display": "Acne vulgaris", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "R21", "display": "Rash and other nonspecific skin eruption", "system": "http://hl7.org/fhir/sid/icd-10-cm"}
+      ]
+    },
+    "ophthalmological": {
+      "name": "眼科疾病",
+      "conditions": [
+        {"code": "H04.129", "display": "Dry eye syndrome of unspecified lacrimal gland", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "H10.9", "display": "Unspecified conjunctivitis", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "H16.9", "display": "Unspecified keratitis", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "H26.9", "display": "Unspecified cataract", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "H35.9", "display": "Unspecified retinal disorder", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "H40.9", "display": "Unspecified glaucoma", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "H52.00", "display": "Hypermetropia, unspecified eye", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "H52.10", "display": "Myopia, unspecified eye", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "H52.209", "display": "Unspecified astigmatism, unspecified eye", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "H52.4", "display": "Presbyopia", "system": "http://hl7.org/fhir/sid/icd-10-cm"}
+      ]
+    },
+    "otolaryngological": {
+      "name": "耳鼻喉疾病",
+      "conditions": [
+        {"code": "H66.90", "display": "Otitis media, unspecified, unspecified ear", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "H91.90", "display": "Unspecified hearing loss, unspecified ear", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "H93.19", "display": "Tinnitus, unspecified ear", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "J02.9", "display": "Acute pharyngitis, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "J03.90", "display": "Acute tonsillitis, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "J30.9", "display": "Allergic rhinitis, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "J31.0", "display": "Chronic rhinitis", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "J32.9", "display": "Chronic sinusitis, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "J33.9", "display": "Nasal polyp, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "J06.9", "display": "Acute upper respiratory infection, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"}
+      ]
+    },
+    "hematological": {
+      "name": "血液疾病",
+      "conditions": [
+        {"code": "C85.90", "display": "Non-Hodgkin lymphoma, unspecified, unspecified site", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "C95.90", "display": "Leukemia, unspecified not having achieved remission", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "D50.9", "display": "Iron deficiency anemia, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "D56.9", "display": "Thalassemia, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "D64.9", "display": "Anemia, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "D66", "display": "Hereditary factor VIII deficiency", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "D69.6", "display": "Thrombocytopenia, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "D75.9", "display": "Disease of blood and blood-forming organs, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "E78.01", "display": "Familial hypercholesterolemia", "system": "http://hl7.org/fhir/sid/icd-10-cm"},
+        {"code": "E78.5", "display": "Hyperlipidemia, unspecified", "system": "http://hl7.org/fhir/sid/icd-10-cm"}
+      ]
+    }
+  }
+}

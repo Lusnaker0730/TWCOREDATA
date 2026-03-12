@@ -14,6 +14,9 @@ services:
     environment:
       - FLASK_ENV=production
       - PYTHONPATH=/app
+    networks:
+      - default
+      - cql-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/"]
@@ -37,3 +40,6 @@ services:
 networks:
   default:
     name: taiwan-fhir-network
+  cql-network:
+    external: true
+    name: docker_cql-network
